@@ -1,0 +1,635 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1049F680FB74FB79155CE6CE /* KeduControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9530564DC49D57D2A0A55B13 /* KeduControls.swift */; };
+		45B3B248513C969571CAE6AB /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5402627FD81C522D68E4EABD /* OnboardingView.swift */; };
+		5458B3A0B84B3733D39E3974 /* ClockEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3CB81E02435ECB7FF502EF7 /* ClockEngine.swift */; };
+		545EFD9C114AC6523FBFC1D0 /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C287097E9E35558916697CA /* HapticManager.swift */; };
+		780DD950F23269F87FCE366B /* KeduApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4068B2934E7B9954F0FA8B5 /* KeduApp.swift */; };
+		8149FDE74492BF31147A3312 /* ScaleBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A6A3E1FB71A11D145C6EDB5 /* ScaleBar.swift */; };
+		87FD9990C743857D506618F6 /* ClockScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1F8A9FB7827A5C733EC40D1 /* ClockScale.swift */; };
+		91526E2F90FF9563BC6A607C /* KeduUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19570913C2E8711019402207 /* KeduUITests.swift */; };
+		99E60D95B53569FD78D26F85 /* EventEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3D33723F3733B3858572938 /* EventEditorView.swift */; };
+		9A1C08B7D19FF27286C568A4 /* ClockEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 506590A065B4F1AA1D4E0B7B /* ClockEngineTests.swift */; };
+		A0869A5E1DE59A739F058D03 /* UserProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67C008426F3D4D80B6A5060D /* UserProfile.swift */; };
+		A2BCB076895868318E254400 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B35EC152AACE3FE13BC0560A /* Assets.xcassets */; };
+		B84395937F7C15AD2420ACDA /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 243E8B358ECA042256FD511D /* SettingsView.swift */; };
+		D0BE61B6D0C175288DD10EA5 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF5871A768DB7BC90F540DC /* AppTheme.swift */; };
+		D3B22C08A2474FCB875EF66A /* TimeEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ED23603B01ACECBC83B4B45 /* TimeEvent.swift */; };
+		D45F95139CBF832B30DEE49A /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 38C726E898AED947C0F68BF2 /* PrivacyInfo.xcprivacy */; };
+		EE1B574956D7E086A82F7D55 /* DotMatrixView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F30E005A74975567FFAF780 /* DotMatrixView.swift */; };
+		F209B5E84BC056209D7D40EB /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1A7B05929C13103BE2180B /* AppRootView.swift */; };
+		F9F392968FE46479E531F928 /* MainClockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9F2B15D4E6AB9E7F10B46E /* MainClockView.swift */; };
+		FA1164DACDDFCD43EE6BFB66 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = FBDBCDF3B95C03E99D38EF29 /* Localizable.xcstrings */; };
+		FD201DE1BAEC409AD61614B9 /* PreviewSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7923AC32F7B27C0625D07F /* PreviewSupport.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		9BD4C801018D4B89E14D407F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 844767BB17FD1247EC3CF274 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F14B254DAC113E428B259F9A;
+			remoteInfo = Kedu;
+		};
+		F800CC9113BCB8BEC7789C28 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 844767BB17FD1247EC3CF274 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F14B254DAC113E428B259F9A;
+			remoteInfo = Kedu;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		19570913C2E8711019402207 /* KeduUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeduUITests.swift; sourceTree = "<group>"; };
+		243E8B358ECA042256FD511D /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		2A1A7B05929C13103BE2180B /* AppRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
+		2ED23603B01ACECBC83B4B45 /* TimeEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeEvent.swift; sourceTree = "<group>"; };
+		38C726E898AED947C0F68BF2 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		506590A065B4F1AA1D4E0B7B /* ClockEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClockEngineTests.swift; sourceTree = "<group>"; };
+		5402627FD81C522D68E4EABD /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		5C287097E9E35558916697CA /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
+		67C008426F3D4D80B6A5060D /* UserProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfile.swift; sourceTree = "<group>"; };
+		6F30E005A74975567FFAF780 /* DotMatrixView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DotMatrixView.swift; sourceTree = "<group>"; };
+		929EE9C738C277F8AD66795B /* KeduTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = KeduTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		9530564DC49D57D2A0A55B13 /* KeduControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeduControls.swift; sourceTree = "<group>"; };
+		9A6A3E1FB71A11D145C6EDB5 /* ScaleBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleBar.swift; sourceTree = "<group>"; };
+		9D9F2B15D4E6AB9E7F10B46E /* MainClockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainClockView.swift; sourceTree = "<group>"; };
+		A3D33723F3733B3858572938 /* EventEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventEditorView.swift; sourceTree = "<group>"; };
+		A4068B2934E7B9954F0FA8B5 /* KeduApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeduApp.swift; sourceTree = "<group>"; };
+		AB25A60ADDF61E4F805D5973 /* Kedu.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Kedu.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B35EC152AACE3FE13BC0560A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		BF7923AC32F7B27C0625D07F /* PreviewSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewSupport.swift; sourceTree = "<group>"; };
+		C3CB81E02435ECB7FF502EF7 /* ClockEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClockEngine.swift; sourceTree = "<group>"; };
+		CAF5871A768DB7BC90F540DC /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
+		D20A441172356937EF3B2033 /* KeduUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = KeduUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1F8A9FB7827A5C733EC40D1 /* ClockScale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClockScale.swift; sourceTree = "<group>"; };
+		FBDBCDF3B95C03E99D38EF29 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		06456610C0EB002078793ADD /* Screens */ = {
+			isa = PBXGroup;
+			children = (
+				A3D33723F3733B3858572938 /* EventEditorView.swift */,
+				9D9F2B15D4E6AB9E7F10B46E /* MainClockView.swift */,
+				5402627FD81C522D68E4EABD /* OnboardingView.swift */,
+				243E8B358ECA042256FD511D /* SettingsView.swift */,
+			);
+			path = Screens;
+			sourceTree = "<group>";
+		};
+		3C67DE14CA7DE956B5A01A4F /* KeduUITests */ = {
+			isa = PBXGroup;
+			children = (
+				19570913C2E8711019402207 /* KeduUITests.swift */,
+			);
+			path = KeduUITests;
+			sourceTree = "<group>";
+		};
+		3F3EF512F699ED892BBDD48E /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				55AB38B70AEADDFB7B809FFD /* Components */,
+				06456610C0EB002078793ADD /* Screens */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		46A580835481F226C84CC255 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				B35EC152AACE3FE13BC0560A /* Assets.xcassets */,
+				FBDBCDF3B95C03E99D38EF29 /* Localizable.xcstrings */,
+				38C726E898AED947C0F68BF2 /* PrivacyInfo.xcprivacy */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		484735C7095E0A21921CC6D1 = {
+			isa = PBXGroup;
+			children = (
+				D40F640D7D41D9C56832DDFC /* Kedu */,
+				FA4BAE3AF6D4E342650CC717 /* KeduTests */,
+				3C67DE14CA7DE956B5A01A4F /* KeduUITests */,
+				7449CAB4A8E622402902C4D5 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		55AB38B70AEADDFB7B809FFD /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				6F30E005A74975567FFAF780 /* DotMatrixView.swift */,
+				9530564DC49D57D2A0A55B13 /* KeduControls.swift */,
+				9A6A3E1FB71A11D145C6EDB5 /* ScaleBar.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		6E417666CB9CC06554B59EFD /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				F1F8A9FB7827A5C733EC40D1 /* ClockScale.swift */,
+				2ED23603B01ACECBC83B4B45 /* TimeEvent.swift */,
+				67C008426F3D4D80B6A5060D /* UserProfile.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		7449CAB4A8E622402902C4D5 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AB25A60ADDF61E4F805D5973 /* Kedu.app */,
+				929EE9C738C277F8AD66795B /* KeduTests.xctest */,
+				D20A441172356937EF3B2033 /* KeduUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7CC5B8D4BF3E5D792D5CF2B4 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				CAF5871A768DB7BC90F540DC /* AppTheme.swift */,
+				C3CB81E02435ECB7FF502EF7 /* ClockEngine.swift */,
+				5C287097E9E35558916697CA /* HapticManager.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		863A080A05AFF7D2F862B1EA /* App */ = {
+			isa = PBXGroup;
+			children = (
+				2A1A7B05929C13103BE2180B /* AppRootView.swift */,
+				A4068B2934E7B9954F0FA8B5 /* KeduApp.swift */,
+				BF7923AC32F7B27C0625D07F /* PreviewSupport.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		D40F640D7D41D9C56832DDFC /* Kedu */ = {
+			isa = PBXGroup;
+			children = (
+				863A080A05AFF7D2F862B1EA /* App */,
+				7CC5B8D4BF3E5D792D5CF2B4 /* Core */,
+				6E417666CB9CC06554B59EFD /* Models */,
+				46A580835481F226C84CC255 /* Resources */,
+				3F3EF512F699ED892BBDD48E /* UI */,
+			);
+			path = Kedu;
+			sourceTree = "<group>";
+		};
+		FA4BAE3AF6D4E342650CC717 /* KeduTests */ = {
+			isa = PBXGroup;
+			children = (
+				506590A065B4F1AA1D4E0B7B /* ClockEngineTests.swift */,
+			);
+			path = KeduTests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		167320F4FA6F680208764C02 /* KeduUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 30E6825C374C8BB8E25AA14D /* Build configuration list for PBXNativeTarget "KeduUITests" */;
+			buildPhases = (
+				B6CF5295ED63653B1CDD7A2F /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5FB3708FC1BC6136D92645F0 /* PBXTargetDependency */,
+			);
+			name = KeduUITests;
+			packageProductDependencies = (
+			);
+			productName = KeduUITests;
+			productReference = D20A441172356937EF3B2033 /* KeduUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		7190E61E9B90FD48B516495C /* KeduTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AD841EB827D43E5FCCB9E272 /* Build configuration list for PBXNativeTarget "KeduTests" */;
+			buildPhases = (
+				EA63EA17D18A4D3B813A4497 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				469A8F3C0A88F35B5B2169B1 /* PBXTargetDependency */,
+			);
+			name = KeduTests;
+			packageProductDependencies = (
+			);
+			productName = KeduTests;
+			productReference = 929EE9C738C277F8AD66795B /* KeduTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		F14B254DAC113E428B259F9A /* Kedu */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EC8733ABAC93E852DD58C847 /* Build configuration list for PBXNativeTarget "Kedu" */;
+			buildPhases = (
+				63DC66AA26E234E0CF29206D /* Sources */,
+				B1C259B8F984E82FA52FD2BE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Kedu;
+			packageProductDependencies = (
+			);
+			productName = Kedu;
+			productReference = AB25A60ADDF61E4F805D5973 /* Kedu.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		844767BB17FD1247EC3CF274 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					167320F4FA6F680208764C02 = {
+						TestTargetID = F14B254DAC113E428B259F9A;
+					};
+				};
+			};
+			buildConfigurationList = BF6B3A30956CDFEE6324D657 /* Build configuration list for PBXProject "Kedu" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+				"zh-Hans",
+			);
+			mainGroup = 484735C7095E0A21921CC6D1;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 7449CAB4A8E622402902C4D5 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F14B254DAC113E428B259F9A /* Kedu */,
+				7190E61E9B90FD48B516495C /* KeduTests */,
+				167320F4FA6F680208764C02 /* KeduUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B1C259B8F984E82FA52FD2BE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A2BCB076895868318E254400 /* Assets.xcassets in Resources */,
+				FA1164DACDDFCD43EE6BFB66 /* Localizable.xcstrings in Resources */,
+				D45F95139CBF832B30DEE49A /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		63DC66AA26E234E0CF29206D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F209B5E84BC056209D7D40EB /* AppRootView.swift in Sources */,
+				D0BE61B6D0C175288DD10EA5 /* AppTheme.swift in Sources */,
+				5458B3A0B84B3733D39E3974 /* ClockEngine.swift in Sources */,
+				87FD9990C743857D506618F6 /* ClockScale.swift in Sources */,
+				EE1B574956D7E086A82F7D55 /* DotMatrixView.swift in Sources */,
+				99E60D95B53569FD78D26F85 /* EventEditorView.swift in Sources */,
+				545EFD9C114AC6523FBFC1D0 /* HapticManager.swift in Sources */,
+				780DD950F23269F87FCE366B /* KeduApp.swift in Sources */,
+				1049F680FB74FB79155CE6CE /* KeduControls.swift in Sources */,
+				F9F392968FE46479E531F928 /* MainClockView.swift in Sources */,
+				45B3B248513C969571CAE6AB /* OnboardingView.swift in Sources */,
+				FD201DE1BAEC409AD61614B9 /* PreviewSupport.swift in Sources */,
+				8149FDE74492BF31147A3312 /* ScaleBar.swift in Sources */,
+				B84395937F7C15AD2420ACDA /* SettingsView.swift in Sources */,
+				D3B22C08A2474FCB875EF66A /* TimeEvent.swift in Sources */,
+				A0869A5E1DE59A739F058D03 /* UserProfile.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B6CF5295ED63653B1CDD7A2F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				91526E2F90FF9563BC6A607C /* KeduUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EA63EA17D18A4D3B813A4497 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9A1C08B7D19FF27286C568A4 /* ClockEngineTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		469A8F3C0A88F35B5B2169B1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F14B254DAC113E428B259F9A /* Kedu */;
+			targetProxy = F800CC9113BCB8BEC7789C28 /* PBXContainerItemProxy */;
+		};
+		5FB3708FC1BC6136D92645F0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F14B254DAC113E428B259F9A /* Kedu */;
+			targetProxy = 9BD4C801018D4B89E14D407F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		24C23AC5C775887B1E1A37E3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 8SJJ8MN7H8;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.local.Kedu;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		3FFDF7025B3BD355628092EF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				EXTRACT_APP_INTENTS_METADATA = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "刻度";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		408C640AC04FBEBEC76E4E46 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.local.KeduTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Kedu.app/Kedu";
+			};
+			name = Release;
+		};
+		5CE94735C1AD992F700AFC2E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.local.KeduTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Kedu.app/Kedu";
+			};
+			name = Debug;
+		};
+		5E987F559AD428B8C5B20DE2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.local.KeduUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Kedu;
+			};
+			name = Debug;
+		};
+		D404DBF461F2F9C0BEC6D3B3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 8SJJ8MN7H8;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.local.Kedu;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		E2B187B5953AC2FA831A4A17 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				EXTRACT_APP_INTENTS_METADATA = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "刻度";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		E550F3EE590C4EF28E08DB61 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.local.KeduUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Kedu;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		30E6825C374C8BB8E25AA14D /* Build configuration list for PBXNativeTarget "KeduUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5E987F559AD428B8C5B20DE2 /* Debug */,
+				E550F3EE590C4EF28E08DB61 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		AD841EB827D43E5FCCB9E272 /* Build configuration list for PBXNativeTarget "KeduTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5CE94735C1AD992F700AFC2E /* Debug */,
+				408C640AC04FBEBEC76E4E46 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		BF6B3A30956CDFEE6324D657 /* Build configuration list for PBXProject "Kedu" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3FFDF7025B3BD355628092EF /* Debug */,
+				E2B187B5953AC2FA831A4A17 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		EC8733ABAC93E852DD58C847 /* Build configuration list for PBXNativeTarget "Kedu" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D404DBF461F2F9C0BEC6D3B3 /* Debug */,
+				24C23AC5C775887B1E1A37E3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 844767BB17FD1247EC3CF274 /* Project object */;
+}

@@ -1,0 +1,54 @@
+name: Kedu
+options:
+  bundleIdPrefix: com.local
+  deploymentTarget:
+    iOS: "18.0"
+  xcodeVersion: "26.0"
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    TARGETED_DEVICE_FAMILY: "1"
+    GENERATE_INFOPLIST_FILE: YES
+    INFOPLIST_KEY_CFBundleDisplayName: "刻度"
+    INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+    INFOPLIST_KEY_UILaunchScreen_Generation: YES
+    INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
+    INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    EXTRACT_APP_INTENTS_METADATA: NO
+targets:
+  Kedu:
+    type: application
+    platform: iOS
+    sources:
+      - path: Kedu
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.local.Kedu
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    scheme:
+      testTargets:
+        - KeduTests
+        - KeduUITests
+      gatherCoverageData: true
+  KeduTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: KeduTests
+    dependencies:
+      - target: Kedu
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.local.KeduTests
+  KeduUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: KeduUITests
+    dependencies:
+      - target: Kedu
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.local.KeduUITests
