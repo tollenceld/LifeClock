@@ -42,6 +42,5 @@ final class TimeEvent {
         set { colorRawValue = newValue.rawValue }
     }
 
-    var scale: ClockScale { recurrence.scale }
+    var scale: ClockScale? { recurrence.scale }
 }
-

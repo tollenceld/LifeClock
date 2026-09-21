@@ -2,10 +2,9 @@ import Foundation
 
 enum ClockScale: String, CaseIterable, Codable, Identifiable, Sendable {
     case life
-    case year
-    case month
-    case week
     case day
+    case month
+    case year
 
     var id: String { rawValue }
 
@@ -26,7 +25,6 @@ enum ClockScale: String, CaseIterable, Codable, Identifiable, Sendable {
         case .life: "人生"
         case .year: "年"
         case .month: "月"
-        case .week: "周"
         case .day: "日"
         }
     }
@@ -36,7 +34,6 @@ enum ClockScale: String, CaseIterable, Codable, Identifiable, Sendable {
         case .life: "人生时钟"
         case .year: "年度时钟"
         case .month: "月度时钟"
-        case .week: "每周时钟"
         case .day: "今日时钟"
         }
     }
@@ -91,6 +88,9 @@ enum RecurrenceRule: String, CaseIterable, Codable, Identifiable, Sendable {
 
     var id: String { rawValue }
 
+    /// Old weekly records remain decodable, but are no longer offered or scheduled.
+    static let supportedCases: [RecurrenceRule] = [.once, .yearly, .monthly, .daily]
+
     var title: String {
         switch self {
         case .once: "一次性"
@@ -101,12 +101,12 @@ enum RecurrenceRule: String, CaseIterable, Codable, Identifiable, Sendable {
         }
     }
 
-    var scale: ClockScale {
+    var scale: ClockScale? {
         switch self {
         case .once: .life
         case .yearly: .year
         case .monthly: .month
-        case .weekly: .week
+        case .weekly: nil
         case .daily: .day
         }
     }

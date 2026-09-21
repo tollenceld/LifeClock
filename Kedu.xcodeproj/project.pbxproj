@@ -8,9 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		1049F680FB74FB79155CE6CE /* KeduControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9530564DC49D57D2A0A55B13 /* KeduControls.swift */; };
+		189E1A6B8C9AAA336C2F7B6F /* LifeClockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B53D8EA56B81B3E9C44D794 /* LifeClockView.swift */; };
+		34915200E9E254732D18653B /* LifeClockSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67C058E573976F9B55EB97AA /* LifeClockSnapshot.swift */; };
 		45B3B248513C969571CAE6AB /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5402627FD81C522D68E4EABD /* OnboardingView.swift */; };
 		5458B3A0B84B3733D39E3974 /* ClockEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3CB81E02435ECB7FF502EF7 /* ClockEngine.swift */; };
 		545EFD9C114AC6523FBFC1D0 /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C287097E9E35558916697CA /* HapticManager.swift */; };
+		688BD01F58267BE94024E68F /* ImmersiveTimeReadout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A47A8E4C50AE7D2F0574D1D /* ImmersiveTimeReadout.swift */; };
 		780DD950F23269F87FCE366B /* KeduApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4068B2934E7B9954F0FA8B5 /* KeduApp.swift */; };
 		8149FDE74492BF31147A3312 /* ScaleBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A6A3E1FB71A11D145C6EDB5 /* ScaleBar.swift */; };
 		87FD9990C743857D506618F6 /* ClockScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1F8A9FB7827A5C733EC40D1 /* ClockScale.swift */; };
@@ -21,8 +24,10 @@
 		A2BCB076895868318E254400 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B35EC152AACE3FE13BC0560A /* Assets.xcassets */; };
 		B84395937F7C15AD2420ACDA /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 243E8B358ECA042256FD511D /* SettingsView.swift */; };
 		D0BE61B6D0C175288DD10EA5 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF5871A768DB7BC90F540DC /* AppTheme.swift */; };
+		D221941C842BEC6B8DDB659C /* EventLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5305B422F646B6026D71DCC1 /* EventLibraryView.swift */; };
 		D3B22C08A2474FCB875EF66A /* TimeEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ED23603B01ACECBC83B4B45 /* TimeEvent.swift */; };
 		D45F95139CBF832B30DEE49A /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 38C726E898AED947C0F68BF2 /* PrivacyInfo.xcprivacy */; };
+		E0929610B6BA2461D9EC8BD1 /* CalendarClockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74B03B1D8B9E25CA07534DA9 /* CalendarClockView.swift */; };
 		EE1B574956D7E086A82F7D55 /* DotMatrixView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F30E005A74975567FFAF780 /* DotMatrixView.swift */; };
 		F209B5E84BC056209D7D40EB /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1A7B05929C13103BE2180B /* AppRootView.swift */; };
 		F9F392968FE46479E531F928 /* MainClockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D9F2B15D4E6AB9E7F10B46E /* MainClockView.swift */; };
@@ -53,11 +58,16 @@
 		2A1A7B05929C13103BE2180B /* AppRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
 		2ED23603B01ACECBC83B4B45 /* TimeEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeEvent.swift; sourceTree = "<group>"; };
 		38C726E898AED947C0F68BF2 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		3B53D8EA56B81B3E9C44D794 /* LifeClockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LifeClockView.swift; sourceTree = "<group>"; };
 		506590A065B4F1AA1D4E0B7B /* ClockEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClockEngineTests.swift; sourceTree = "<group>"; };
+		5305B422F646B6026D71DCC1 /* EventLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventLibraryView.swift; sourceTree = "<group>"; };
 		5402627FD81C522D68E4EABD /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		5C287097E9E35558916697CA /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
 		67C008426F3D4D80B6A5060D /* UserProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfile.swift; sourceTree = "<group>"; };
+		67C058E573976F9B55EB97AA /* LifeClockSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LifeClockSnapshot.swift; sourceTree = "<group>"; };
+		6A47A8E4C50AE7D2F0574D1D /* ImmersiveTimeReadout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImmersiveTimeReadout.swift; sourceTree = "<group>"; };
 		6F30E005A74975567FFAF780 /* DotMatrixView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DotMatrixView.swift; sourceTree = "<group>"; };
+		74B03B1D8B9E25CA07534DA9 /* CalendarClockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarClockView.swift; sourceTree = "<group>"; };
 		929EE9C738C277F8AD66795B /* KeduTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = KeduTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9530564DC49D57D2A0A55B13 /* KeduControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeduControls.swift; sourceTree = "<group>"; };
 		9A6A3E1FB71A11D145C6EDB5 /* ScaleBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleBar.swift; sourceTree = "<group>"; };
@@ -78,7 +88,10 @@
 		06456610C0EB002078793ADD /* Screens */ = {
 			isa = PBXGroup;
 			children = (
+				74B03B1D8B9E25CA07534DA9 /* CalendarClockView.swift */,
 				A3D33723F3733B3858572938 /* EventEditorView.swift */,
+				5305B422F646B6026D71DCC1 /* EventLibraryView.swift */,
+				3B53D8EA56B81B3E9C44D794 /* LifeClockView.swift */,
 				9D9F2B15D4E6AB9E7F10B46E /* MainClockView.swift */,
 				5402627FD81C522D68E4EABD /* OnboardingView.swift */,
 				243E8B358ECA042256FD511D /* SettingsView.swift */,
@@ -127,6 +140,7 @@
 			isa = PBXGroup;
 			children = (
 				6F30E005A74975567FFAF780 /* DotMatrixView.swift */,
+				6A47A8E4C50AE7D2F0574D1D /* ImmersiveTimeReadout.swift */,
 				9530564DC49D57D2A0A55B13 /* KeduControls.swift */,
 				9A6A3E1FB71A11D145C6EDB5 /* ScaleBar.swift */,
 			);
@@ -159,6 +173,7 @@
 				CAF5871A768DB7BC90F540DC /* AppTheme.swift */,
 				C3CB81E02435ECB7FF502EF7 /* ClockEngine.swift */,
 				5C287097E9E35558916697CA /* HapticManager.swift */,
+				67C058E573976F9B55EB97AA /* LifeClockSnapshot.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -306,13 +321,18 @@
 			files = (
 				F209B5E84BC056209D7D40EB /* AppRootView.swift in Sources */,
 				D0BE61B6D0C175288DD10EA5 /* AppTheme.swift in Sources */,
+				E0929610B6BA2461D9EC8BD1 /* CalendarClockView.swift in Sources */,
 				5458B3A0B84B3733D39E3974 /* ClockEngine.swift in Sources */,
 				87FD9990C743857D506618F6 /* ClockScale.swift in Sources */,
 				EE1B574956D7E086A82F7D55 /* DotMatrixView.swift in Sources */,
 				99E60D95B53569FD78D26F85 /* EventEditorView.swift in Sources */,
+				D221941C842BEC6B8DDB659C /* EventLibraryView.swift in Sources */,
 				545EFD9C114AC6523FBFC1D0 /* HapticManager.swift in Sources */,
+				688BD01F58267BE94024E68F /* ImmersiveTimeReadout.swift in Sources */,
 				780DD950F23269F87FCE366B /* KeduApp.swift in Sources */,
 				1049F680FB74FB79155CE6CE /* KeduControls.swift in Sources */,
+				34915200E9E254732D18653B /* LifeClockSnapshot.swift in Sources */,
+				189E1A6B8C9AAA336C2F7B6F /* LifeClockView.swift in Sources */,
 				F9F392968FE46479E531F928 /* MainClockView.swift in Sources */,
 				45B3B248513C969571CAE6AB /* OnboardingView.swift in Sources */,
 				FD201DE1BAEC409AD61614B9 /* PreviewSupport.swift in Sources */,

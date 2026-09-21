@@ -54,6 +54,7 @@ struct ScaleProgressSnapshot: Identifiable, Equatable, Sendable {
 }
 
 struct ClockPresentationSnapshot: Identifiable, Equatable, Sendable {
+    let calendar: Calendar
     var id: ClockScale { scale }
 
     let scale: ClockScale
@@ -191,8 +192,6 @@ enum ClockEngine {
             return calendar.dateInterval(of: .year, for: now) ?? fallbackDayInterval(now, calendar: calendar)
         case .month:
             return calendar.dateInterval(of: .month, for: now) ?? fallbackDayInterval(now, calendar: calendar)
-        case .week:
-            return calendar.dateInterval(of: .weekOfYear, for: now) ?? fallbackDayInterval(now, calendar: calendar)
         case .day:
             return calendar.dateInterval(of: .day, for: now) ?? fallbackDayInterval(now, calendar: calendar)
         }
@@ -222,6 +221,7 @@ enum ClockEngine {
         }
 
         return ClockPresentationSnapshot(
+            calendar: calendar,
             scale: clock.scale,
             clock: clock,
             units: presentationUnits(for: clock, at: now, calendar: calendar, profile: profile),
@@ -238,8 +238,7 @@ enum ClockEngine {
     private static func relationshipScales(for scale: ClockScale) -> [ClockScale] {
         switch scale {
         case .life, .year: [.life, .year, .month]
-        case .month: [.year, .month, .week]
-        case .week, .day: [.month, .week, .day]
+        case .month, .day: [.year, .month, .day]
         }
     }
 
@@ -266,8 +265,6 @@ enum ClockEngine {
             )
         case .month:
             return monthUnits(clock: clock, at: now, calendar: calendar)
-        case .week:
-            return weekPhaseUnits(clock: clock, at: now, calendar: calendar)
         case .day:
             return dayHourUnits(clock: clock, at: now, calendar: calendar)
         }
@@ -369,51 +366,6 @@ enum ClockEngine {
         return Array(result.prefix(42))
     }
 
-    private static func weekPhaseUnits(
-        clock: ClockSnapshot,
-        at now: Date,
-        calendar: Calendar
-    ) -> [ClockUnitSnapshot] {
-        var units: [ClockUnitSnapshot] = []
-        let phaseHours = [0, 6, 12, 18]
-
-        for dayIndex in 0..<7 {
-            guard
-                let dayStart = calendar.date(byAdding: .day, value: dayIndex, to: clock.interval.start),
-                let nextDay = calendar.date(byAdding: .day, value: 1, to: dayStart)
-            else { continue }
-
-            for (phaseIndex, hour) in phaseHours.enumerated() {
-                let start = calendar.date(
-                    bySettingHour: hour,
-                    minute: 0,
-                    second: 0,
-                    of: dayStart
-                ) ?? dayStart
-                let end: Date
-                if phaseIndex == phaseHours.count - 1 {
-                    end = nextDay
-                } else {
-                    end = calendar.date(
-                        bySettingHour: phaseHours[phaseIndex + 1],
-                        minute: 0,
-                        second: 0,
-                        of: dayStart
-                    ) ?? nextDay
-                }
-                let id = dayIndex * phaseHours.count + phaseIndex
-                units.append(makeUnit(
-                    id: id,
-                    interval: DateInterval(start: start, end: end),
-                    label: nil,
-                    at: now,
-                    markers: clock.markers
-                ))
-            }
-        }
-        return units
-    }
-
     private static func dayHourUnits(
         clock: ClockSnapshot,
         at now: Date,
@@ -494,14 +446,6 @@ enum ClockEngine {
             return stride(from: 0, to: units.count, by: 7).map { start in
                 Array(units[start..<min(start + 7, units.count)]).map(\.progress).max() ?? 0
             }
-        case .week:
-            return (0..<7).compactMap { dayOffset in
-                guard
-                    let start = calendar.date(byAdding: .day, value: dayOffset, to: clock.interval.start),
-                    let end = calendar.date(byAdding: .day, value: dayOffset + 1, to: clock.interval.start)
-                else { return nil }
-                return unitProgress(at: now, interval: DateInterval(start: start, end: end))
-            }
         case .day:
             return [0, 6, 12, 18].map { hour in
                 let start = calendar.date(bySettingHour: hour, minute: 0, second: 0, of: clock.interval.start)
@@ -567,14 +511,6 @@ enum ClockEngine {
                 "本月第\(week)周 · \(weekday)",
                 "工作日 \(counts.workdays) · 周末 \(counts.weekends)",
                 remainingDaysText(prefix: "距下月", from: now, to: clock.interval.end, calendar: calendar)
-            )
-        case .week:
-            let phase = dayPhase(at: now, calendar: calendar)
-            let dayOffset = max(1, (calendar.dateComponents([.day], from: clock.interval.start, to: now).day ?? 0) + 1)
-            return (
-                "\(weekday) · \(phase)",
-                "本周第\(min(7, dayOffset))天",
-                remainingClockText(prefix: "距下周", from: now, to: clock.interval.end)
             )
         case .day:
             let hour = calendar.component(.hour, from: now)
@@ -649,7 +585,7 @@ enum ClockEngine {
         switch scale {
         case .life:
             return max(1, profile.targetAge * 12)
-        case .year, .month, .week:
+        case .year, .month:
             return max(1, calendar.dateComponents([.day], from: interval.start, to: interval.end).day ?? 1)
         case .day:
             return max(1, Int((interval.duration / 3_600).rounded()))
@@ -661,7 +597,6 @@ enum ClockEngine {
         case .life: 24
         case .year: 20
         case .month: 7
-        case .week: 7
         case .day: 6
         }
     }
@@ -680,8 +615,6 @@ enum ClockEngine {
             return String(calendar.component(.year, from: now))
         case .month:
             return "\(calendar.component(.month, from: now))月"
-        case .week:
-            return "第\(calendar.component(.weekOfYear, from: now))周"
         case .day:
             return "\(calendar.component(.day, from: now))日"
         }
@@ -690,7 +623,7 @@ enum ClockEngine {
     private static func countText(scale: ClockScale, completed: Int, total: Int) -> String {
         let unit: String = switch scale {
         case .life: "个月"
-        case .year, .month, .week: "天"
+        case .year, .month: "天"
         case .day: "小时"
         }
         return "\(completed.formatted()) / \(total.formatted()) \(unit)"
@@ -704,7 +637,7 @@ enum ClockEngine {
         profile: UserProfile
     ) -> Date? {
         guard event.recurrence.scale == scale else { return nil }
-        let components = calendar.dateComponents([.month, .day, .weekday, .hour, .minute], from: event.anchorDate)
+        let components = calendar.dateComponents([.month, .day, .hour, .minute], from: event.anchorDate)
 
         let date: Date?
         switch event.recurrence {
@@ -729,12 +662,7 @@ enum ClockEngine {
                 calendar: calendar
             )
         case .weekly:
-            let weekday = components.weekday ?? calendar.firstWeekday
-            let offset = (weekday - calendar.firstWeekday + 7) % 7
-            let day = calendar.date(byAdding: .day, value: offset, to: interval.start)
-            date = day.flatMap {
-                calendar.date(bySettingHour: components.hour ?? 0, minute: components.minute ?? 0, second: 0, of: $0)
-            }
+            return nil
         case .daily:
             date = calendar.date(
                 bySettingHour: components.hour ?? 0,

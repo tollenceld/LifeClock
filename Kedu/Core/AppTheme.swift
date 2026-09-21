@@ -20,16 +20,20 @@ final class AppTheme {
         static let hero: CGFloat = 32
     }
 
+    func accentInk(for scheme: ColorScheme) -> Color {
+        scheme == .dark ? accent : Color(red: 0.62, green: 0.33, blue: 0.01)
+    }
+
     func background(for scheme: ColorScheme) -> Color {
         scheme == .dark
-            ? Color(red: 0.018, green: 0.019, blue: 0.022)
+            ? Color(red: 0.047, green: 0.051, blue: 0.050)
             : Color(red: 0.965, green: 0.956, blue: 0.935)
     }
 
     func surface(for scheme: ColorScheme) -> Color {
         scheme == .dark
-            ? Color(red: 0.095, green: 0.098, blue: 0.108)
-            : Color(red: 0.90, green: 0.89, blue: 0.86)
+            ? Color(red: 0.078, green: 0.086, blue: 0.083)
+            : Color(red: 0.985, green: 0.978, blue: 0.958)
     }
 
     func elevatedSurface(for scheme: ColorScheme) -> Color {
@@ -55,7 +59,7 @@ final class AppTheme {
     }
 
     func completedDot(for scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color.white.opacity(0.94) : Color.black.opacity(0.80)
+        scheme == .dark ? Color(red: 0.85, green: 0.87, blue: 0.81) : Color.black.opacity(0.74)
     }
 
     func futureDot(for scheme: ColorScheme) -> Color {
@@ -63,7 +67,7 @@ final class AppTheme {
     }
 
     func secondaryLabel(for scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color.white.opacity(0.46) : Color.black.opacity(0.50)
+        scheme == .dark ? Color.white.opacity(0.60) : Color.black.opacity(0.59)
     }
 
     func navigationLabel(for scheme: ColorScheme) -> Color {
@@ -79,7 +83,7 @@ final class AppTheme {
     }
 
     func tertiaryLabel(for scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color.white.opacity(0.24) : Color.black.opacity(0.28)
+        scheme == .dark ? Color.white.opacity(0.40) : Color.black.opacity(0.44)
     }
 
     func glassStroke(for scheme: ColorScheme) -> Color {
@@ -100,5 +104,34 @@ extension EventColor {
         case .coral: Color(red: 0.90, green: 0.40, blue: 0.33)
         case .violet: Color(red: 0.57, green: 0.40, blue: 0.78)
         }
+    }
+}
+
+
+enum AppAppearance: String, CaseIterable, Identifiable {
+    case system, light, dark
+    var id: String { rawValue }
+    var title: String {
+        switch self {
+        case .system: "跟随系统"
+        case .light: "暖纸"
+        case .dark: "石墨"
+        }
+    }
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .system: nil
+        case .light: .light
+        case .dark: .dark
+        }
+    }
+}
+
+// Keep the system preference authoritative; the override only lets UI tests exercise the same branch.
+extension EnvironmentValues {
+    @Entry var keduReduceMotionOverride = false
+
+    var keduReduceMotion: Bool {
+        accessibilityReduceMotion || keduReduceMotionOverride
     }
 }

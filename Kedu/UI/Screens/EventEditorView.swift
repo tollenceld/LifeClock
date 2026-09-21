@@ -1,6 +1,19 @@
 import SwiftData
 import SwiftUI
 
+private enum EventEditorSheet: String, Identifiable {
+    case date
+    case deleteConfirmation
+
+    var id: String { rawValue }
+}
+
+private extension RecurrenceRule {
+    var editorScaleDescription: String {
+        scale.map { "\($0.title)尺度" } ?? "历史刻点 · 已停用"
+    }
+}
+
 struct EventEditorView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
@@ -15,8 +28,7 @@ struct EventEditorView: View {
     @State private var eventColor: EventColor
     @State private var recurrence: RecurrenceRule
     @State private var anchorDate: Date
-    @State private var showingDateCalibration = false
-    @State private var showingDeleteConfirmation = false
+    @State private var presentedSheet: EventEditorSheet?
     @State private var saveError: String?
     @FocusState private var titleFocused: Bool
 
@@ -31,7 +43,8 @@ struct EventEditorView: View {
         _title = State(initialValue: event?.title ?? "")
         _symbolName = State(initialValue: event?.symbolName ?? "circle.fill")
         _eventColor = State(initialValue: event?.eventColor ?? .jade)
-        _recurrence = State(initialValue: event?.recurrence ?? defaultRecurrence)
+        let supportedDefault = RecurrenceRule.supportedCases.contains(defaultRecurrence) ? defaultRecurrence : .once
+        _recurrence = State(initialValue: event?.recurrence ?? supportedDefault)
         _anchorDate = State(initialValue: event?.anchorDate ?? .now)
     }
 
@@ -47,7 +60,7 @@ struct EventEditorView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     KeduSheetHeader(
                         title: event == nil ? "添加刻点" : "编辑刻点",
-                        subtitle: "把一个时刻放进它所属的尺度",
+                        subtitle: event?.recurrence == .weekly ? "保留记录，或选择新的重复规则" : "把一个时刻放进它所属的尺度",
                         closeIdentifier: "event.close"
                     ) {
                         dismiss()
@@ -97,14 +110,19 @@ struct EventEditorView: View {
 
                     VStack(alignment: .leading, spacing: 10) {
                         sectionTitle("重复")
+                            .accessibilityIdentifier("event.recurrence")
+
+                        if event?.recurrence == .weekly {
+                            historicalRuleStatus
+                        }
 
                         KeduSegmentedRail(
-                            options: RecurrenceRule.allCases,
+                            options: RecurrenceRule.supportedCases,
                             selection: $recurrence,
                             label: { Text($0.title) },
-                            accessibilityLabel: { $0.title }
+                            accessibilityLabel: { $0.title },
+                            accessibilityIdentifier: { "event.recurrence.\($0.rawValue)" }
                         )
-                        .accessibilityIdentifier("event.recurrence")
                     }
 
                     VStack(alignment: .leading, spacing: 10) {
@@ -114,10 +132,10 @@ struct EventEditorView: View {
                             KeduCalibrationField(
                                 title: datePickerTitle,
                                 value: formattedAnchorDate,
-                                helper: "按照\(recurrence.scale.title)尺度显示",
+                                helper: recurrence.scale == nil ? "仅保留记录，不在主图显示" : "按照\(recurrence.editorScaleDescription)显示",
                                 systemImage: "clock"
                             ) {
-                                showingDateCalibration = true
+                                presentedSheet = .date
                             }
                         }
                         .accessibilityIdentifier("event.date")
@@ -139,7 +157,7 @@ struct EventEditorView: View {
                             systemImage: "trash",
                             role: .destructive
                         ) {
-                            showingDeleteConfirmation = true
+                            presentedSheet = .deleteConfirmation
                         }
                         .accessibilityIdentifier("event.delete")
                         .padding(.top, 6)
@@ -173,20 +191,22 @@ struct EventEditorView: View {
             .padding(.bottom, 8)
             .background(theme.background(for: colorScheme).opacity(0.96))
         }
-        .sheet(isPresented: $showingDateCalibration) {
-            EventDateCalibrationSheet(
-                date: $anchorDate,
-                recurrence: recurrence,
-                validRange: validDateRange
-            )
-        }
-        .sheet(isPresented: $showingDeleteConfirmation) {
-            KeduConfirmationSheet(
-                title: "删除这个刻点？",
-                message: "删除后无法恢复，但不会影响其他时间尺度。",
-                confirmTitle: "确认删除",
-                confirmAction: delete
-            )
+        .sheet(item: $presentedSheet) { destination in
+            switch destination {
+            case .date:
+                EventDateCalibrationSheet(
+                    date: $anchorDate,
+                    recurrence: recurrence,
+                    validRange: validDateRange
+                )
+            case .deleteConfirmation:
+                KeduConfirmationSheet(
+                    title: "删除这个刻点？",
+                    message: "删除后无法恢复，但不会影响其他时间尺度。",
+                    confirmTitle: "确认删除",
+                    confirmAction: delete
+                )
+            }
         }
         .animation(.easeInOut(duration: 0.2), value: saveError)
     }
@@ -197,12 +217,41 @@ struct EventEditorView: View {
             .foregroundStyle(theme.navigationLabel(for: colorScheme))
     }
 
+    private var historicalRuleStatus: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label(
+                recurrence == .weekly ? "历史刻点 · 每周规则已停用" : "保存后转换为\(recurrence.title)规则",
+                systemImage: "clock.arrow.circlepath"
+            )
+            .font(.system(size: 13, weight: .medium))
+
+            Text(recurrence == .weekly
+                 ? "可以修改名称、时间和外观。直接保存会保留历史规则；选择下方选项可转换规则。"
+                 : "新规则将在保存后生效。关闭编辑不会改变原来的历史刻点。")
+                .font(.caption)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if recurrence != .weekly {
+                Button("保留历史规则") { recurrence = .weekly }
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(theme.accentInk(for: colorScheme))
+                    .frame(minHeight: 44)
+                    .accessibilityIdentifier("event.history.keep")
+            }
+        }
+        .foregroundStyle(theme.secondaryLabel(for: colorScheme))
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(theme.surface(for: colorScheme), in: RoundedRectangle(cornerRadius: 18))
+        .accessibilityIdentifier("event.history")
+    }
+
     private var datePickerTitle: String {
         switch recurrence {
         case .once: "日期与时间"
         case .yearly: "每年"
         case .monthly: "每月"
-        case .weekly: "每周"
+        case .weekly: "原记录时间"
         case .daily: "每天"
         }
     }
@@ -248,6 +297,7 @@ struct EventEditorView: View {
             HapticManager.shared.saved(enabled: profile.hapticsEnabled)
             dismiss()
         } catch {
+            modelContext.rollback()
             saveError = "刻点未能保存，请再试一次。"
         }
     }
@@ -257,14 +307,15 @@ struct EventEditorView: View {
         modelContext.delete(event)
         do {
             try modelContext.save()
-            showingDeleteConfirmation = false
+            presentedSheet = nil
             Task { @MainActor in
                 await Task.yield()
                 dismiss()
             }
         } catch {
+            modelContext.rollback()
             saveError = "刻点未能删除，请再试一次。"
-            showingDeleteConfirmation = false
+            presentedSheet = nil
         }
     }
 }
@@ -307,9 +358,9 @@ private struct EventPreviewPanel: View {
                 Spacer(minLength: 6)
 
                 VStack(alignment: .trailing, spacing: 4) {
-                    Text(recurrence.scale.title)
+                    Text(recurrence.scale?.title ?? "历史")
                         .font(.system(size: 22, weight: .light, design: .monospaced))
-                    Text("尺度")
+                    Text(recurrence.scale == nil ? "已停用" : "尺度")
                         .font(.system(size: 9, design: .monospaced))
                         .foregroundStyle(theme.secondaryLabel(for: colorScheme))
                 }
@@ -318,21 +369,21 @@ private struct EventPreviewPanel: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("刻点预览")
-        .accessibilityValue("\(title.isEmpty ? "未命名" : title)，\(recurrence.title)，\(recurrence.scale.title)尺度")
+        .accessibilityValue("\(title.isEmpty ? "未命名" : title)，\(recurrence.title)，\(recurrence.editorScaleDescription)")
         .accessibilityIdentifier("event.preview")
     }
 
     private var previewDate: String {
         recurrence == .daily
             ? anchorDate.formatted(date: .omitted, time: .shortened)
-            : anchorDate.formatted(date: .abbreviated, time: .shortened)
+            : anchorDate.formatted(.dateTime.year().month().day().hour().minute().locale(Locale(identifier: "zh_Hans_CN")))
     }
 }
 
 private struct AppearanceSelector: View {
     @Environment(AppTheme.self) private var theme
     @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.keduReduceMotion) private var reduceMotion
 
     let symbols: [String]
     @Binding var symbolName: String
@@ -450,7 +501,7 @@ private struct EventDateCalibrationSheet: View {
             theme.background(for: colorScheme).ignoresSafeArea()
 
             VStack(spacing: 20) {
-                KeduSheetHeader(title: "校准时间", subtitle: "\(recurrence.title) · \(recurrence.scale.title)尺度") {
+                KeduSheetHeader(title: "校准时间", subtitle: "\(recurrence.title) · \(recurrence.editorScaleDescription)") {
                     dismiss()
                 }
 

@@ -1,18 +1,12 @@
 import SwiftData
 import SwiftUI
 
-private enum SettingsCalibration: String, Identifiable {
+private enum SettingsSheet: String, Identifiable {
     case birthday
     case targetAge
+    case eventLibrary
 
     var id: String { rawValue }
-}
-
-private enum WeekStartChoice: String, CaseIterable, Hashable {
-    case monday
-    case sunday
-
-    var title: String { self == .monday ? "周一" : "周日" }
 }
 
 struct SettingsView: View {
@@ -21,20 +15,14 @@ struct SettingsView: View {
     @Environment(AppTheme.self) private var theme
     @Environment(\.colorScheme) private var colorScheme
 
+    @AppStorage("appearance") private var appearance: AppAppearance = .system
     @Bindable var profile: UserProfile
 
-    @State private var calibration: SettingsCalibration?
+    @State private var presentedSheet: SettingsSheet?
     @State private var notice: String?
 
     private var currentAge: Int {
         max(0, Calendar.current.dateComponents([.year], from: profile.birthDate, to: .now).year ?? 0)
-    }
-
-    private var weekStart: Binding<WeekStartChoice> {
-        Binding(
-            get: { profile.weekStartsOnMonday ? .monday : .sunday },
-            set: { updateWeekStart($0) }
-        )
     }
 
     private var hapticsBinding: Binding<Bool> {
@@ -75,7 +63,7 @@ struct SettingsView: View {
                                     helper: "修改后将重新计算人生刻度",
                                     systemImage: "calendar"
                                 ) {
-                                    calibration = .birthday
+                                    presentedSheet = .birthday
                                 }
                                 .accessibilityIdentifier("settings.birthday")
 
@@ -87,7 +75,7 @@ struct SettingsView: View {
                                     helper: "范围为当前年龄之后至 150 岁",
                                     systemImage: "ruler"
                                 ) {
-                                    calibration = .targetAge
+                                    presentedSheet = .targetAge
                                 }
                                 .accessibilityIdentifier("settings.targetAge")
                             }
@@ -97,22 +85,49 @@ struct SettingsView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 10) {
-                        sectionTitle("时间规则")
+                        sectionTitle("刻点")
 
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("一周开始")
-                                .font(.system(size: 13, weight: .medium))
-
-                            KeduSegmentedRail(
-                                options: WeekStartChoice.allCases,
-                                selection: weekStart,
-                                label: { Text($0.title) },
-                                accessibilityLabel: { "以\($0.title)作为一周开始" }
-                            )
-                            .accessibilityIdentifier("settings.weekStart")
+                        KeduGlassSurface(role: .standard, cornerRadius: 24) {
+                            KeduCalibrationField(
+                                title: "刻点集",
+                                value: "查看全部",
+                                helper: "寻找、添加和整理值得记住的时刻",
+                                systemImage: "circle.grid.2x2"
+                            ) {
+                                presentedSheet = .eventLibrary
+                            }
+                            .accessibilityIdentifier("events.library")
                         }
-                        .padding(16)
-                        .background(theme.elevatedSurface(for: colorScheme).opacity(0.22), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+                    }
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        sectionTitle("外观")
+                        HStack(spacing: 10) {
+                            ForEach(AppAppearance.allCases) { option in
+                                Button { appearance = option } label: {
+                                    VStack(spacing: 10) {
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .fill(option == .light ? Color(red: 0.96, green: 0.94, blue: 0.89) : Color(red: 0.08, green: 0.09, blue: 0.08))
+                                            .overlay {
+                                                HStack(spacing: 4) {
+                                                    ForEach(0..<5) { index in
+                                                        Capsule().fill(index == 3 ? theme.accent : (option == .light ? Color.black.opacity(0.6) : Color.white.opacity(0.7)))
+                                                            .frame(width: 3, height: index == 2 ? 25 : 15)
+                                                    }
+                                                }
+                                            }
+                                            .frame(height: 52)
+                                        Text(option.title).font(.system(size: 12, weight: .medium))
+                                    }
+                                    .padding(10).frame(maxWidth: .infinity)
+                                    .background(theme.surface(for: colorScheme), in: RoundedRectangle(cornerRadius: 18))
+                                    .overlay(RoundedRectangle(cornerRadius: 18).stroke(appearance == option ? theme.accent : .clear, lineWidth: 1))
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityIdentifier("appearance.\(option.rawValue)")
+                                .accessibilityAddTraits(appearance == option ? .isSelected : [])
+                            }
+                        }
                     }
 
                     VStack(alignment: .leading, spacing: 10) {
@@ -156,7 +171,7 @@ struct SettingsView: View {
                     .accessibilityIdentifier("settings.notice")
             }
         }
-        .sheet(item: $calibration) { destination in
+        .sheet(item: $presentedSheet) { destination in
             switch destination {
             case .birthday:
                 BirthdayCalibrationSheet(initialDate: profile.birthDate) { value in
@@ -169,6 +184,10 @@ struct SettingsView: View {
                 ) { value in
                     updateTargetAge(value)
                 }
+            case .eventLibrary:
+                EventLibraryView(profile: profile)
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.hidden)
             }
         }
         .animation(.easeInOut(duration: 0.2), value: notice)
@@ -202,12 +221,6 @@ struct SettingsView: View {
         let oldValue = profile.targetAge
         profile.targetAge = min(150, max(currentAge + 1, value))
         persist { profile.targetAge = oldValue }
-    }
-
-    private func updateWeekStart(_ choice: WeekStartChoice) {
-        let oldValue = profile.weekStartsOnMonday
-        profile.weekStartsOnMonday = choice == .monday
-        persist { profile.weekStartsOnMonday = oldValue }
     }
 
     private func updateHaptics(_ enabled: Bool) {
@@ -426,7 +439,7 @@ private struct AgeCalibrationSheet: View {
         Button { adjust(delta) } label: {
             Image(systemName: symbol)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(theme.accent)
+                .foregroundStyle(theme.accentInk(for: colorScheme))
                 .frame(width: 48, height: 48)
                 .background(theme.fieldFill(for: colorScheme), in: Circle())
                 .overlay(Circle().stroke(theme.subtleStroke(for: colorScheme), lineWidth: 0.6))

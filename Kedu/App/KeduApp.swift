@@ -46,6 +46,14 @@ struct KeduApp: App {
                 )
             )
         }
+        if CommandLine.arguments.contains("-uiTestingSeedWeeklyEvent") {
+            context.insert(TimeEvent(title: "每周回顾", symbolName: "book.fill", recurrence: .weekly, anchorDate: .now))
+        }
+        if CommandLine.arguments.contains("-uiTestingSeedCalendarEvents") {
+            context.insert(TimeEvent(title: "第一刻点", recurrence: .daily, anchorDate: .now))
+            context.insert(TimeEvent(title: "第二刻点", recurrence: .daily, anchorDate: .now))
+            context.insert(TimeEvent(title: "本月刻点", recurrence: .monthly, anchorDate: .now))
+        }
         try? context.save()
     }
 }

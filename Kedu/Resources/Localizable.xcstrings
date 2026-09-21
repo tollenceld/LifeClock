@@ -30,32 +30,161 @@
     "%@主图" : {
 
     },
-    "%@仪表" : {
+    "个值得记住的时刻" : {
 
     },
-    "%@尺度关系" : {
-
-    },
-    "%@阶段信息" : {
-
-    },
-    "一周开始" : {
-
-    },
-    "为%@添加第一个事件" : {
+    "人生" : {
 
     },
     "人生刻度" : {
 
     },
+    "仅保留记录，不在主图显示" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仅保留记录，不在主图显示"
+          }
+        }
+      }
+    },
     "仅需一次设置" : {
 
+    },
+    "从你的生日开始，看见此刻在人生中的位置。" : {
+
+    },
+    "你的设置仍在这里，请再试一次。" : {
+
+    },
+    "保留历史规则" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保留历史规则"
+          }
+        }
+      }
+    },
+    "分钟" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分钟"
+          }
+        }
+      }
     },
     "刻度" : {
 
     },
-    "尺度" : {
+    "剩余" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "剩余"
+          }
+        }
+      }
+    },
+    "剩余人生计时器" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "剩余人生计时器"
+          }
+        }
+      }
+    },
+    "剩余年数" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "剩余年数"
+          }
+        }
+      }
+    },
+    "剩余百分比" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "剩余百分比"
+          }
+        }
+      }
+    },
+    "历史刻点" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "历史刻点"
+          }
+        }
+      }
+    },
+    "历史刻点 · 每周规则已停用" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "历史刻点 · 每周规则已停用"
+          }
+        }
+      }
+    },
+    "原每周规则已停用。可以保留记录，或在编辑中选择新的重复规则。" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "原每周规则已停用。可以保留记录，或在编辑中选择新的重复规则。"
+          }
+        }
+      }
+    },
+    "原记录时间" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "原记录时间"
+          }
+        }
+      }
+    },
+    "只用于计算时间，始终留在你的设备上。" : {
 
+    },
+    "小时" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "小时"
+          }
+        }
+      }
     },
     "岁" : {
 
@@ -63,43 +192,169 @@
     "左右拖动刻度，或使用两侧按钮微调" : {
 
     },
+    "已度过 · 天" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已度过 · 天"
+          }
+        }
+      }
+    },
+    "已过" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已过"
+          }
+        }
+      }
+    },
+    "已过人生计时器" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已过人生计时器"
+          }
+        }
+      }
+    },
+    "已过百分比" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已过百分比"
+          }
+        }
+      }
+    },
     "当前 %@ 岁" : {
 
+    },
+    "当前年龄" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前年龄"
+          }
+        }
+      }
     },
     "拖动刻度、切换与保存时提供克制反馈" : {
 
     },
-    "本周期 %@ 个刻点" : {
+    "时间有形，\n生活有刻度。" : {
 
     },
-    "标记起点，再放下一条可以随时修改的远线。" : {
-
+    "此刻的年龄" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此刻的年龄"
+          }
+        }
+      }
+    },
+    "死之时" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "死之时"
+          }
+        }
+      }
     },
     "版本 1.0" : {
 
     },
+    "生之时" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "生之时"
+          }
+        }
+      }
+    },
     "生日" : {
+
+    },
+    "生日、纪念日，或每天留给自己的片刻。\n从一个刻点开始。" : {
 
     },
     "生日与人生刻度只保存在这台设备上。" : {
 
     },
-    "设定你的刻度" : {
-
-    },
-    "调整生日" : {
-
+    "秒" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "秒"
+          }
+        }
+      }
     },
     "调整预期年龄" : {
 
     },
+    "距设定的%lld岁" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "距设定的%lld岁"
+          }
+        }
+      }
+    },
+    "轻点翻转，查看时间的另一面" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轻点翻转，查看时间的另一面"
+          }
+        }
+      }
+    },
     "轻触反馈" : {
 
     },
-    "还没有刻点" : {
-
+    "还剩 · 天" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还剩 · 天"
+          }
+        }
+      }
     },
     "预期年龄" : {
+
+    },
+    "预期年龄不是预测，只是一把可以随时调整的尺。" : {
 
     }
   },

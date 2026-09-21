@@ -41,7 +41,7 @@ enum PreviewSupport {
                 title: "锻炼",
                 symbolName: "figure.run",
                 color: .cobalt,
-                recurrence: .weekly,
+                recurrence: .daily,
                 anchorDate: calendar.date(from: DateComponents(year: 2026, month: 8, day: 30, hour: 18)) ?? .now
             ))
         }

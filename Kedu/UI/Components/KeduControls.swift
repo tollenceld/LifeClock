@@ -45,30 +45,15 @@ struct KeduGlassSurface<Content: View>: View {
     }
 
     var body: some View {
-        if #available(iOS 26.0, *) {
-            switch role {
-            case .standard:
-                content()
-                    .glassEffect(.regular, in: .rect(cornerRadius: cornerRadius))
-            case .interactive:
-                content()
-                    .glassEffect(.regular.interactive(), in: .rect(cornerRadius: cornerRadius))
-            case .emphasized:
-                content()
-                    .glassEffect(
-                        .regular.tint(theme.accent.opacity(0.11)).interactive(),
-                        in: .rect(cornerRadius: cornerRadius)
-                    )
+        // Solid instrument panels keep text legible; glass is reserved for floating controls.
+        content()
+            .background(theme.surface(for: colorScheme), in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .stroke(theme.subtleStroke(for: colorScheme).opacity(0.7), lineWidth: 0.5)
             }
-        } else {
-            content()
-                .background(theme.glassFallback(for: colorScheme), in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-                .overlay {
-                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .stroke(theme.glassStroke(for: colorScheme), lineWidth: 0.65)
-                }
-        }
     }
+
 }
 
 struct KeduSheetHeader: View {
@@ -102,33 +87,20 @@ struct KeduSheetHeader: View {
         .frame(minHeight: 56)
     }
 
-    @ViewBuilder
     private var closeButton: some View {
-        if #available(iOS 26.0, *) {
-            Button(action: closeAction) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(theme.accent)
-                    .frame(width: 44, height: 44)
-            }
-            .buttonStyle(.glass)
-            .buttonBorderShape(.circle)
-            .tint(theme.accent.opacity(0.12))
-            .accessibilityLabel("关闭")
-            .accessibilityIdentifier(closeIdentifier)
-        } else {
-            Button(action: closeAction) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 15, weight: .semibold))
-                    .frame(width: 44, height: 44)
-                    .background(theme.glassFallback(for: colorScheme), in: Circle())
-                    .overlay(Circle().stroke(theme.glassStroke(for: colorScheme), lineWidth: 0.65))
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("关闭")
-            .accessibilityIdentifier(closeIdentifier)
+        Button(action: closeAction) {
+            Image(systemName: "xmark")
+                .font(.system(size: 15, weight: .medium))
+                .foregroundStyle(theme.secondaryLabel(for: colorScheme))
+                .frame(width: 44, height: 44)
+                .background(theme.surface(for: colorScheme), in: Circle())
+                .overlay(Circle().stroke(theme.subtleStroke(for: colorScheme), lineWidth: 0.5))
         }
+        .buttonStyle(.plain)
+        .accessibilityLabel("关闭")
+        .accessibilityIdentifier(closeIdentifier)
     }
+
 }
 
 enum KeduActionRole {
@@ -225,12 +197,13 @@ private struct KeduFallbackActionStyle: ButtonStyle {
 struct KeduSegmentedRail<Option: Hashable, Label: View>: View {
     @Environment(AppTheme.self) private var theme
     @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.keduReduceMotion) private var reduceMotion
 
     let options: [Option]
     @Binding var selection: Option
     let label: (Option) -> Label
     var accessibilityLabel: (Option) -> String = { String(describing: $0) }
+    var accessibilityIdentifier: (Option) -> String = { _ in "" }
 
     @Namespace private var selectionNamespace
 
@@ -261,13 +234,14 @@ struct KeduSegmentedRail<Option: Hashable, Label: View>: View {
 
                             label(option)
                                 .font(.system(size: 13, weight: option == selection ? .semibold : .medium))
-                                .foregroundStyle(option == selection ? theme.accent : theme.navigationLabel(for: colorScheme))
+                                .foregroundStyle(option == selection ? theme.accentInk(for: colorScheme) : theme.navigationLabel(for: colorScheme))
                         }
                         .frame(maxWidth: .infinity, minHeight: 44)
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(accessibilityLabel(option))
+                    .accessibilityIdentifier(accessibilityIdentifier(option))
                     .accessibilityAddTraits(option == selection ? .isSelected : [])
                 }
             }
@@ -279,7 +253,7 @@ struct KeduSegmentedRail<Option: Hashable, Label: View>: View {
 struct KeduPrecisionToggleStyle: ToggleStyle {
     @Environment(AppTheme.self) private var theme
     @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.keduReduceMotion) private var reduceMotion
 
     func makeBody(configuration: Configuration) -> some View {
         Button {
@@ -334,7 +308,7 @@ struct KeduCalibrationField: View {
             HStack(spacing: 14) {
                 Image(systemName: systemImage)
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(theme.accent)
+                    .foregroundStyle(theme.accentInk(for: colorScheme))
                     .frame(width: 44, height: 44)
                     .background(theme.fieldFill(for: colorScheme), in: Circle())
 

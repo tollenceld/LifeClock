@@ -2,6 +2,8 @@ import SwiftData
 import SwiftUI
 
 struct AppRootView: View {
+    @AppStorage("appearance") private var appearance: AppAppearance = .system
+    @Environment(\.keduReduceMotion) private var reduceMotion
     @Query(sort: \UserProfile.birthDate) private var profiles: [UserProfile]
 
     var body: some View {
@@ -14,7 +16,10 @@ struct AppRootView: View {
                     .transition(.opacity)
             }
         }
-        .animation(.easeInOut(duration: 0.28), value: profiles.first?.onboardingCompleted)
+        .environment(\.locale, Locale(identifier: "zh_Hans_CN"))
+        .environment(\.keduReduceMotionOverride, CommandLine.arguments.contains("-uiTesting") && CommandLine.arguments.contains("-uiTestingReduceMotion"))
+        .preferredColorScheme(appearance.colorScheme)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.28), value: profiles.first?.onboardingCompleted)
     }
 }
 

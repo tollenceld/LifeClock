@@ -3,11 +3,12 @@ import SwiftUI
 struct TimeFieldView: View {
     @Environment(AppTheme.self) private var theme
     @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.keduReduceMotion) private var reduceMotion
 
     let source: ClockPresentationSnapshot
     let target: ClockPresentationSnapshot
     let progress: Double
+    var isActive = true
     let onMarkerTap: (UUID) -> Void
 
     var body: some View {
@@ -19,7 +20,7 @@ struct TimeFieldView: View {
             let activeLayout = effectiveProgress < 0.5 ? sourceLayout : targetLayout
 
             ZStack {
-                TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: reduceMotion)) { timeline in
+                TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: reduceMotion || !isActive)) { timeline in
                     MorphingClockCanvas(
                         source: source,
                         target: target,
@@ -341,12 +342,12 @@ private struct MorphingClockCanvas: View {
     }
 }
 
-private struct ClockVisualItem {
+struct ClockVisualItem {
     let center: CGPoint
     let size: CGSize
 }
 
-private struct ClockVisualAnnotation: Identifiable {
+struct ClockVisualAnnotation: Identifiable {
     let id: String
     let text: String
     let point: CGPoint
@@ -360,7 +361,7 @@ private struct ClockVisualAnnotation: Identifiable {
     }
 }
 
-private struct ClockVisualLayout {
+struct ClockVisualLayout {
     let presentation: ClockPresentationSnapshot
     let size: CGSize
     let guideRects: [CGRect]
@@ -392,11 +393,9 @@ private struct ClockVisualLayout {
         case .life:
             layout = Self.makeLifeItems(count: presentation.units.count, size: size)
         case .year:
-            layout = Self.makeYearItems(count: presentation.units.count, size: size)
+            layout = Self.makeYearItems(units: presentation.units, calendar: presentation.calendar, size: size)
         case .month:
-            layout = Self.makeMonthItems(size: size)
-        case .week:
-            layout = Self.makeWeekItems(size: size)
+            layout = Self.makeMonthItems(size: size, weekdays: Self.weekdayLabels(for: presentation))
         case .day:
             layout = Self.makeDayItems(count: presentation.units.count, size: size)
         }
@@ -465,40 +464,45 @@ private struct ClockVisualLayout {
         return (items, [], annotations, [])
     }
 
+    private static func weekdayLabels(for presentation: ClockPresentationSnapshot) -> [String] {
+        let calendar = presentation.calendar
+        let first = presentation.units.firstIndex { $0.interval != nil } ?? 0
+        let date = presentation.units[first].interval?.start ?? presentation.clock.interval.start
+        let leading = presentation.scale == .month ? first : 0
+        let start = (calendar.component(.weekday, from: date) - 1 - leading + 7) % 7
+        let symbols = ["日", "一", "二", "三", "四", "五", "六"]
+        return (0..<7).map { symbols[(start + $0) % 7] }
+    }
+
     private static func makeYearItems(
-        count: Int,
+        units: [ClockUnitSnapshot],
+        calendar: Calendar,
         size: CGSize
     ) -> (items: [ClockVisualItem], guides: [CGRect], annotations: [ClockVisualAnnotation], fineRects: [CGRect]) {
-        let columns = 20
-        let rows = max(1, Int(ceil(Double(count) / Double(columns))))
-        let inset: CGFloat = 12
-        let horizontalStep = (size.width - inset * 2) / CGFloat(columns - 1)
-        let verticalStep = (size.height - 28) / CGFloat(max(1, rows - 1))
-        let step = min(horizontalStep, verticalStep)
-        let contentWidth = CGFloat(columns - 1) * step
-        let contentHeight = CGFloat(rows - 1) * step
-        let origin = CGPoint(
-            x: size.width / 2 - contentWidth / 2,
-            y: size.height / 2 - contentHeight / 2
-        )
-        let diameter = min(5.2, max(3.4, step * 0.30))
-        return (
-            gridItems(
-                count: count,
-                columns: columns,
-                origin: origin,
-                horizontalStep: step,
-                verticalStep: step,
-                itemSize: CGSize(width: diameter, height: diameter)
-            ),
-            [],
-            [],
-            []
-        )
+        let cellWidth = (size.width - 24) / 3
+        let cellHeight = (size.height - 12) / 4
+        let stepX = min(11, (cellWidth - 18) / 6)
+        let stepY = max(5, min(9, (cellHeight - 28) / 4))
+        var annotations: [ClockVisualAnnotation] = []
+        for month in 0..<12 {
+            annotations.append(ClockVisualAnnotation(
+                id: "year-month-\(month)", text: String(format: "%02d", month + 1),
+                point: CGPoint(x: 12 + CGFloat(month % 3) * cellWidth + cellWidth / 2, y: 8 + CGFloat(month / 3) * cellHeight), size: 10
+            ))
+        }
+        let items = units.map { unit -> ClockVisualItem in
+            let date = unit.interval?.start ?? .now
+            let month = calendar.component(.month, from: date) - 1
+            let day = calendar.component(.day, from: date) - 1
+            let x = 12 + CGFloat(month % 3) * cellWidth + cellWidth / 2 - stepX * 3 + CGFloat(day % 7) * stepX
+            let y = 25 + CGFloat(month / 3) * cellHeight + CGFloat(day / 7) * stepY
+            return ClockVisualItem(center: CGPoint(x: x, y: y), size: CGSize(width: 3.2, height: 3.2))
+        }
+        return (items, [], annotations, [])
     }
 
     private static func makeMonthItems(
-        size: CGSize
+        size: CGSize, weekdays: [String]
     ) -> (items: [ClockVisualItem], guides: [CGRect], annotations: [ClockVisualAnnotation], fineRects: [CGRect]) {
         let columns = 7
         let left: CGFloat = 30
@@ -516,7 +520,6 @@ private struct ClockVisualLayout {
             verticalStep: verticalStep,
             itemSize: itemSize
         )
-        let weekdays = ["一", "二", "三", "四", "五", "六", "日"]
         let annotations = weekdays.enumerated().map { index, text in
             ClockVisualAnnotation(
                 id: "month-\(index)",
@@ -525,56 +528,6 @@ private struct ClockVisualLayout {
             )
         }
         return (items, [], annotations, [])
-    }
-
-    private static func makeWeekItems(
-        size: CGSize
-    ) -> (items: [ClockVisualItem], guides: [CGRect], annotations: [ClockVisualAnnotation], fineRects: [CGRect]) {
-        let columns = 7
-        let rows = 4
-        let left: CGFloat = 48
-        let right: CGFloat = 18
-        let top: CGFloat = 44
-        let bottom: CGFloat = 20
-        let horizontalStep = (size.width - left - right) / CGFloat(columns - 1)
-        let verticalStep = (size.height - top - bottom) / CGFloat(rows - 1)
-        let itemSize = CGSize(width: min(24, horizontalStep * 0.48), height: min(40, verticalStep * 0.66))
-        let items = gridItems(
-            count: columns * rows,
-            columns: columns,
-            origin: CGPoint(x: left, y: top),
-            horizontalStep: horizontalStep,
-            verticalStep: verticalStep,
-            itemSize: itemSize,
-            columnMajor: true,
-            rows: rows
-        )
-        let guides = items.map {
-            CGRect(
-                x: $0.center.x - $0.size.width / 2,
-                y: $0.center.y - $0.size.height / 2,
-                width: $0.size.width,
-                height: $0.size.height
-            )
-        }
-        let weekdays = ["一", "二", "三", "四", "五", "六", "日"]
-        var annotations = weekdays.enumerated().map { index, text in
-            ClockVisualAnnotation(
-                id: "week-day-\(index)",
-                text: text,
-                point: CGPoint(x: left + CGFloat(index) * horizontalStep, y: 14)
-            )
-        }
-        let phases = ["凌晨", "上午", "下午", "夜间"]
-        annotations.append(contentsOf: phases.enumerated().map { index, text in
-            ClockVisualAnnotation(
-                id: "week-phase-\(index)",
-                text: text,
-                point: CGPoint(x: 19, y: top + CGFloat(index) * verticalStep),
-                size: 8
-            )
-        })
-        return (items, guides, annotations, [])
     }
 
     private static func makeDayItems(
@@ -588,8 +541,8 @@ private struct ClockVisualLayout {
         let width = min(10, max(5, step * 0.66))
         let items = (0..<count).map { index in
             ClockVisualItem(
-                center: CGPoint(x: left + CGFloat(index) * step, y: 62),
-                size: CGSize(width: width, height: 46)
+                center: CGPoint(x: left + CGFloat(index) * step, y: size.height * 0.20),
+                size: CGSize(width: width, height: min(46, size.height * 0.18))
             )
         }
         let guides = items.map {
@@ -604,14 +557,14 @@ private struct ClockVisualLayout {
             ClockVisualAnnotation(
                 id: "day-hour-\(index)",
                 text: String(format: "%02d", index),
-                point: CGPoint(x: left + CGFloat(index) * step, y: 106),
+                point: CGPoint(x: left + CGFloat(index) * step, y: size.height * 0.36),
                 size: 8
             )
         }
         annotations.append(ClockVisualAnnotation(
             id: "day-minute-title",
             text: "当前小时 · 60分钟",
-            point: CGPoint(x: size.width / 2, y: 142),
+            point: CGPoint(x: size.width / 2, y: size.height * 0.50),
             size: 9
         ))
 
@@ -619,7 +572,7 @@ private struct ClockVisualLayout {
         let fineRows = 4
         let fineLeft: CGFloat = 26
         let fineRight: CGFloat = 20
-        let fineTop: CGFloat = 170
+        let fineTop = size.height * 0.64
         let fineBottom: CGFloat = 18
         let fineHorizontalStep = (size.width - fineLeft - fineRight) / CGFloat(fineColumns - 1)
         let fineVerticalStep = (size.height - fineTop - fineBottom) / CGFloat(fineRows - 1)
