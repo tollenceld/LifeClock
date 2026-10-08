@@ -1,0 +1,1 @@
+Final supplementary core/UI attempt on iOS 26.3.1 did not start after build. Cancelled after no test execution; not counted as a pass. Final core tests and three regressions completed on iOS 27.0 (49 core + 3 UI). Earlier compact UI run passed 3 tests including maximum Dynamic Type.

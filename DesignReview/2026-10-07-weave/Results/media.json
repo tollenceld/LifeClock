@@ -1,0 +1,34 @@
+[
+  {
+    "file": "DesignReview/2026-10-07-weave/Motion/life-realtime.mp4",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "width": 1320,
+          "height": 2868
+        }
+      ],
+      "format": {
+        "duration": "42.042175"
+      }
+    }
+  },
+  {
+    "file": "DesignReview/2026-10-07-weave/Motion/scales-realtime.mp4",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "width": 1320,
+          "height": 2868
+        }
+      ],
+      "format": {
+        "duration": "35.956915"
+      }
+    }
+  }
+]

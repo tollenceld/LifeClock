@@ -1,0 +1,16 @@
+Unsigned Release Archive: /tmp/KeduWeaveRelease.xcarchive
+Command log: /tmp/KeduWeaveReleaseComplete.log
+ex/ArchiveIntermediates/Kedu/InstallationBuildProductsLocation/Applications/Kedu.app -shallow-bundle -infoplist-subpath Info.plist
+
+Touch /tmp/KeduWeaveReleaseDerivedData/Build/Intermediates.noindex/ArchiveIntermediates/Kedu/InstallationBuildProductsLocation/Applications/Kedu.app (in target 'Kedu' from project 'Kedu')
+    cd /Users/banking/Desktop/TimeClock
+    /usr/bin/touch -c /tmp/KeduWeaveReleaseDerivedData/Build/Intermediates.noindex/ArchiveIntermediates/Kedu/InstallationBuildProductsLocation/Applications/Kedu.app
+
+PruneExplicitPrecompiledModules /tmp/KeduWeaveReleaseDerivedData/SDKExplicitPrecompiledModules
+
+PruneExplicitPrecompiledModules /tmp/KeduWeaveReleaseDerivedData/Build/Intermediates.noindex/ArchiveIntermediates/Kedu/IntermediateBuildFilesPath/SwiftExplicitPrecompiledModules
+
+PruneExplicitPrecompiledModules /tmp/KeduWeaveReleaseDerivedData/Build/Intermediates.noindex/ArchiveIntermediates/Kedu/IntermediateBuildFilesPath/ExplicitPrecompiledModules
+
+** ARCHIVE SUCCEEDED **
+

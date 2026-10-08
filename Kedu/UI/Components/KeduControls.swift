@@ -69,14 +69,14 @@ struct KeduSheetHeader: View {
         HStack(alignment: .center, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.system(size: 32, weight: .semibold))
+                    .font(.largeTitle.weight(.semibold))
                     .tracking(-0.8)
 
                 if let subtitle {
                     Text(subtitle)
-                        .font(.system(size: 12, design: .monospaced))
+                        .font(.caption)
                         .foregroundStyle(theme.secondaryLabel(for: colorScheme))
-                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
 
@@ -90,7 +90,7 @@ struct KeduSheetHeader: View {
     private var closeButton: some View {
         Button(action: closeAction) {
             Image(systemName: "xmark")
-                .font(.system(size: 15, weight: .medium))
+                .font(.subheadline.weight(.medium))
                 .foregroundStyle(theme.secondaryLabel(for: colorScheme))
                 .frame(width: 44, height: 44)
                 .background(theme.surface(for: colorScheme), in: Circle())
@@ -153,7 +153,7 @@ struct KeduActionButton: View {
                 }
                 Text(title)
             }
-            .font(.system(size: 16, weight: .semibold))
+            .font(.headline)
             .frame(maxWidth: .infinity, minHeight: 54)
             .contentShape(Rectangle())
         }
@@ -163,6 +163,8 @@ struct KeduActionButton: View {
 private struct KeduFallbackActionStyle: ButtonStyle {
     @Environment(AppTheme.self) private var theme
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.keduReduceMotion) private var reduceMotion
+    @Environment(\.keduReduceTransparency) private var reduceTransparency
 
     let role: KeduActionRole
 
@@ -174,8 +176,8 @@ private struct KeduFallbackActionStyle: ButtonStyle {
                 RoundedRectangle(cornerRadius: AppTheme.Radius.control, style: .continuous)
                     .stroke(theme.glassStroke(for: colorScheme), lineWidth: role == .primary ? 0 : 0.65)
             }
-            .scaleEffect(configuration.isPressed ? 0.985 : 1)
-            .animation(.easeOut(duration: 0.14), value: configuration.isPressed)
+            .scaleEffect(!reduceMotion && configuration.isPressed ? 0.985 : 1)
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.14), value: configuration.isPressed)
     }
 
     private var foreground: Color {
@@ -189,7 +191,8 @@ private struct KeduFallbackActionStyle: ButtonStyle {
     private var fill: AnyShapeStyle {
         switch role {
         case .primary: AnyShapeStyle(theme.accent)
-        case .secondary, .destructive: AnyShapeStyle(theme.glassFallback(for: colorScheme))
+        case .secondary, .destructive:
+            reduceTransparency ? AnyShapeStyle(theme.surface(for: colorScheme)) : AnyShapeStyle(theme.glassFallback(for: colorScheme))
         }
     }
 }
@@ -198,6 +201,7 @@ struct KeduSegmentedRail<Option: Hashable, Label: View>: View {
     @Environment(AppTheme.self) private var theme
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.keduReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     let options: [Option]
     @Binding var selection: Option
@@ -209,20 +213,27 @@ struct KeduSegmentedRail<Option: Hashable, Label: View>: View {
 
     var body: some View {
         KeduGlassSurface(role: .interactive, cornerRadius: AppTheme.Radius.control) {
-            HStack(spacing: 0) {
+            let layout = dynamicTypeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 4)) : AnyLayout(HStackLayout(spacing: 0))
+            layout {
                 ForEach(Array(options.enumerated()), id: \.offset) { _, option in
                     Button {
                         guard option != selection else { return }
                         if reduceMotion {
                             selection = option
                         } else {
-                            withAnimation(.spring(response: 0.38, dampingFraction: 0.86)) {
+                            withAnimation(.easeInOut(duration: 0.22)) {
                                 selection = option
                             }
                         }
                     } label: {
-                        ZStack {
-                            if option == selection {
+                        label(option)
+                            .font(.callout.weight(option == selection ? .semibold : .medium))
+                            .foregroundStyle(option == selection ? theme.accentInk(for: colorScheme) : theme.navigationLabel(for: colorScheme))
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.vertical, dynamicTypeSize.isAccessibilitySize ? 12 : 0)
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                            .background {
+                                if option == selection {
                                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                                     .fill(theme.accent.opacity(colorScheme == .dark ? 0.23 : 0.16))
                                     .overlay {
@@ -230,14 +241,9 @@ struct KeduSegmentedRail<Option: Hashable, Label: View>: View {
                                             .stroke(theme.accent.opacity(0.44), lineWidth: 0.7)
                                     }
                                     .matchedGeometryEffect(id: "selection", in: selectionNamespace)
+                                }
                             }
-
-                            label(option)
-                                .font(.system(size: 13, weight: option == selection ? .semibold : .medium))
-                                .foregroundStyle(option == selection ? theme.accentInk(for: colorScheme) : theme.navigationLabel(for: colorScheme))
-                        }
-                        .frame(maxWidth: .infinity, minHeight: 44)
-                        .contentShape(Rectangle())
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(accessibilityLabel(option))
@@ -260,7 +266,7 @@ struct KeduPrecisionToggleStyle: ToggleStyle {
             if reduceMotion {
                 configuration.isOn.toggle()
             } else {
-                withAnimation(.spring(response: 0.34, dampingFraction: 0.78)) {
+                withAnimation(.easeInOut(duration: 0.22)) {
                     configuration.isOn.toggle()
                 }
             }
@@ -307,22 +313,22 @@ struct KeduCalibrationField: View {
         Button(action: action) {
             HStack(spacing: 14) {
                 Image(systemName: systemImage)
-                    .font(.system(size: 15, weight: .medium))
+                    .font(.subheadline.weight(.medium))
                     .foregroundStyle(theme.accentInk(for: colorScheme))
                     .frame(width: 44, height: 44)
                     .background(theme.fieldFill(for: colorScheme), in: Circle())
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(title)
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.caption.weight(.medium))
                         .foregroundStyle(theme.secondaryLabel(for: colorScheme))
                     Text(value)
-                        .font(.system(size: 17, weight: .medium, design: .monospaced))
+                        .font(.callout.monospaced().weight(.medium))
                         .monospacedDigit()
                         .contentTransition(.numericText())
                     if let helper {
                         Text(helper)
-                            .font(.system(size: 10))
+                            .font(.caption2)
                             .foregroundStyle(theme.tertiaryLabel(for: colorScheme))
                     }
                 }
@@ -334,6 +340,7 @@ struct KeduCalibrationField: View {
                     .foregroundStyle(theme.tertiaryLabel(for: colorScheme))
             }
             .padding(.horizontal, 14)
+            .padding(.vertical, 12)
             .frame(minHeight: 72)
             .contentShape(Rectangle())
         }
@@ -381,7 +388,7 @@ struct KeduNoticeBanner: View {
                 Image(systemName: isError ? "exclamationmark.circle.fill" : "checkmark.circle.fill")
                     .foregroundStyle(isError ? theme.danger : theme.accent)
                 Text(message)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.caption.weight(.medium))
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(.horizontal, 14)
@@ -394,6 +401,7 @@ struct KeduNoticeBanner: View {
 
 struct KeduConfirmationSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     let title: String
     let message: String
@@ -401,7 +409,8 @@ struct KeduConfirmationSheet: View {
     let confirmAction: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
+        ScrollView {
+          VStack(alignment: .leading, spacing: 18) {
             KeduSheetHeader(title: title, subtitle: message) {
                 dismiss()
             }
@@ -416,9 +425,9 @@ struct KeduConfirmationSheet: View {
             KeduActionButton(title: "取消", role: .secondary) {
                 dismiss()
             }
+          }.padding(20)
         }
-        .padding(20)
-        .presentationDetents([.height(300)])
+        .presentationDetents([dynamicTypeSize.isAccessibilitySize ? .large : .height(340)])
         .presentationDragIndicator(.hidden)
     }
 }

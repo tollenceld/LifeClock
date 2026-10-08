@@ -86,6 +86,7 @@ enum ClockEngine {
         events: [TimeEvent]
     ) -> ClockSnapshot {
         var calendar = sourceCalendar
+        if scale == .life { calendar = profile.lifeCalendar(from: calendar) }
         calendar.locale = Locale(identifier: "zh_Hans_CN")
         calendar.firstWeekday = profile.weekStartsOnMonday ? 2 : 1
 
@@ -184,10 +185,7 @@ enum ClockEngine {
     ) -> DateInterval {
         switch scale {
         case .life:
-            let start = calendar.startOfDay(for: profile.birthDate)
-            let end = calendar.date(byAdding: .year, value: profile.targetAge, to: start)
-                ?? start.addingTimeInterval(TimeInterval(profile.targetAge) * 365.25 * 86_400)
-            return DateInterval(start: start, end: end)
+            return LifeTimeAnchors(calendar: calendar, birthDate: profile.birthday(in: calendar), targetAge: profile.targetAge).interval
         case .year:
             return calendar.dateInterval(of: .year, for: now) ?? fallbackDayInterval(now, calendar: calendar)
         case .month:
@@ -209,6 +207,7 @@ enum ClockEngine {
         calendar: Calendar,
         profile: UserProfile
     ) -> ClockPresentationSnapshot {
+        let calendar = clock.scale == .life ? profile.lifeCalendar(from: calendar) : calendar
         let stage = stageCopy(for: clock, at: now, calendar: calendar, profile: profile)
         let relationScales = relationshipScales(for: clock.scale)
         let relatedProgress = relationScales.map { scale in
@@ -276,11 +275,10 @@ enum ClockEngine {
         calendar: Calendar,
         profile: UserProfile
     ) -> [ClockUnitSnapshot] {
-        (0..<profile.targetAge).compactMap { age in
-            guard
-                let start = calendar.date(byAdding: .year, value: age, to: profile.birthDate),
-                let end = calendar.date(byAdding: .year, value: age + 1, to: profile.birthDate)
-            else { return nil }
+        (0..<max(0, profile.targetAge)).map { age in
+            let birth = calendar.startOfDay(for: profile.birthday(in: calendar))
+            let start = LifeTimeAnchors.birthday(atAge: age, birth: birth, calendar: calendar)
+            let end = LifeTimeAnchors.birthday(atAge: age + 1, birth: birth, calendar: calendar)
             let interval = DateInterval(start: start, end: end)
             return makeUnit(
                 id: age,
@@ -423,14 +421,13 @@ enum ClockEngine {
     ) -> [Double] {
         switch clock.scale {
         case .life:
-            let age = max(0, calendar.dateComponents([.year], from: profile.birthDate, to: now).year ?? 0)
+            let age = Int(LifeClockSnapshot(at: now, calendar: calendar, birthDate: profile.birthday(in: calendar), targetAge: profile.targetAge).age)
             let decadeStart = age / 10 * 10
             return (decadeStart..<(decadeStart + 10)).map { year in
-                guard
-                    year < profile.targetAge,
-                    let start = calendar.date(byAdding: .year, value: year, to: profile.birthDate),
-                    let end = calendar.date(byAdding: .year, value: year + 1, to: profile.birthDate)
-                else { return 0 }
+                guard year < profile.targetAge else { return 0 }
+                let birth = calendar.startOfDay(for: profile.birthday(in: calendar))
+                let start = LifeTimeAnchors.birthday(atAge: year, birth: birth, calendar: calendar)
+                let end = LifeTimeAnchors.birthday(atAge: year + 1, birth: birth, calendar: calendar)
                 return unitProgress(at: now, interval: DateInterval(start: start, end: end))
             }
         case .year:
@@ -484,12 +481,11 @@ enum ClockEngine {
         let weekday = shortWeekday(at: now, calendar: calendar)
         switch clock.scale {
         case .life:
-            let age = max(0, calendar.dateComponents([.year], from: profile.birthDate, to: now).year ?? 0)
+            let age = Int(LifeClockSnapshot(at: now, calendar: calendar, birthDate: profile.birthday(in: calendar), targetAge: profile.targetAge).age)
             let decade = age / 10 + 1
             let decadeStart = age / 10 * 10
             let decadeEnd = min(profile.targetAge - 1, decadeStart + 9)
-            let nextBirthday = calendar.date(byAdding: .year, value: age + 1, to: profile.birthDate)
-                ?? clock.interval.end
+            let nextBirthday = LifeTimeAnchors.birthday(atAge: age + 1, birth: calendar.startOfDay(for: profile.birthday(in: calendar)), calendar: calendar)
             return (
                 "第\(decade)个十年 · \(age)–\(age + 1)岁",
                 "当前十年 \(decadeStart)–\(decadeEnd)岁",
@@ -609,7 +605,7 @@ enum ClockEngine {
     ) -> String {
         switch scale {
         case .life:
-            let years = max(0, calendar.dateComponents([.year], from: profile.birthDate, to: now).year ?? 0)
+            let years = Int(LifeClockSnapshot(at: now, calendar: calendar, birthDate: profile.birthday(in: calendar), targetAge: profile.targetAge).age)
             return "\(years)岁"
         case .year:
             return String(calendar.component(.year, from: now))
@@ -637,7 +633,7 @@ enum ClockEngine {
         profile: UserProfile
     ) -> Date? {
         guard event.recurrence.scale == scale else { return nil }
-        let components = calendar.dateComponents([.month, .day, .hour, .minute], from: event.anchorDate)
+        let components = calendar.dateComponents([.month, .day, .hour, .minute], from: event.anchor(in: calendar))
 
         let date: Date?
         switch event.recurrence {
@@ -674,8 +670,8 @@ enum ClockEngine {
 
         guard let date, date >= interval.start, date < interval.end else { return nil }
         if event.recurrence == .once {
-            let lifeEnd = calendar.date(byAdding: .year, value: profile.targetAge, to: profile.birthDate) ?? interval.end
-            guard date >= profile.birthDate, date < lifeEnd else { return nil }
+            let lifeEnd = LifeTimeAnchors(calendar: calendar, birthDate: profile.birthday(in: calendar), targetAge: profile.targetAge).target
+            guard date >= profile.birthday(in: calendar), date < lifeEnd else { return nil }
         }
         return date
     }

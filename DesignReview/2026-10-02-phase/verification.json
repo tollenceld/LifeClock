@@ -1,0 +1,82 @@
+{
+  "KeduPhaseAllTests": {
+    "title": "Test - Kedu",
+    "result": "Failed",
+    "totalTestCount": 55,
+    "passedTests": 54,
+    "failedTests": 1,
+    "skippedTests": 0,
+    "startTime": 1790931158.077,
+    "finishTime": 1790932017.871
+  },
+  "KeduPhaseRepairTests": {
+    "title": "Test - Kedu",
+    "result": "Passed",
+    "totalTestCount": 3,
+    "passedTests": 3,
+    "failedTests": 0,
+    "skippedTests": 0,
+    "startTime": 1790931688.415,
+    "finishTime": 1790931733.303
+  },
+  "KeduPhaseMotionTests": {
+    "title": "Test - Kedu",
+    "result": "Passed",
+    "totalTestCount": 1,
+    "passedTests": 1,
+    "failedTests": 0,
+    "skippedTests": 0,
+    "startTime": 1790931783.903,
+    "finishTime": 1790931829.286
+  },
+  "KeduPhaseCompactTests": {
+    "title": "Test - Kedu",
+    "result": "Failed",
+    "totalTestCount": 42,
+    "passedTests": 41,
+    "failedTests": 1,
+    "skippedTests": 0,
+    "startTime": 1790931781.553,
+    "finishTime": 1790932044.299
+  },
+  "KeduPhaseCompactRepair": {
+    "title": "Test - Kedu",
+    "result": "Passed",
+    "totalTestCount": 3,
+    "passedTests": 3,
+    "failedTests": 0,
+    "skippedTests": 0,
+    "startTime": 1790932311.112,
+    "finishTime": 1790932370.703
+  },
+  "KeduPhaseFinalTargeted": {
+    "title": "Test - Kedu",
+    "result": "Passed",
+    "totalTestCount": 37,
+    "passedTests": 37,
+    "failedTests": 0,
+    "skippedTests": 0,
+    "startTime": 1790932423.856,
+    "finishTime": 1790932485.171
+  },
+  "KeduPhaseAccessibilityFinal": {
+    "title": "Test - Kedu",
+    "result": "Passed",
+    "totalTestCount": 2,
+    "passedTests": 2,
+    "failedTests": 0,
+    "skippedTests": 0,
+    "startTime": 1790932549.323,
+    "finishTime": 1790932580.086
+  },
+  "KeduPhaseFinal": {
+    "title": "Test - Kedu",
+    "result": "Passed",
+    "totalTestCount": 37,
+    "passedTests": 37,
+    "failedTests": 0,
+    "skippedTests": 0,
+    "startTime": 1790932703.157,
+    "finishTime": 1790932734.915
+  }
+}

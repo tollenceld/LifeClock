@@ -37,28 +37,34 @@ struct EventLibraryView: View {
             theme.background(for: colorScheme).ignoresSafeArea()
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    KeduSheetHeader(title: "刻点集", subtitle: "那些让时间有了名字的时刻", closeIdentifier: "events.close") { dismiss() }
+                    KeduSheetHeader(title: "刻点集", subtitle: "记录与周期刻点", closeIdentifier: "events.close") { dismiss() }
                     HStack {
                         Text("\(events.count)").font(.system(size: 56, weight: .light, design: .rounded))
-                        Text("个值得记住的时刻").font(.subheadline).foregroundStyle(theme.secondaryLabel(for: colorScheme))
+                        Text("个刻点").font(.subheadline).foregroundStyle(theme.secondaryLabel(for: colorScheme))
                         Spacer()
-                        Image(systemName: "sparkle").font(.system(size: 28, weight: .ultraLight)).foregroundStyle(theme.accentInk(for: colorScheme))
                     }
                     HStack(spacing: 10) {
                         Image(systemName: "magnifyingglass").foregroundStyle(theme.secondaryLabel(for: colorScheme))
                         TextField("寻找一个刻点", text: $search).accessibilityIdentifier("events.search")
+                            .submitLabel(.search)
+                        if !search.isEmpty {
+                            Button { search = "" } label: {
+                                Image(systemName: "xmark.circle.fill").frame(width: 44, height: 44)
+                            }.buttonStyle(.plain).accessibilityLabel("清除搜索").accessibilityIdentifier("events.search.clear")
+                        }
                     }
                     .padding(16).background(theme.surface(for: colorScheme), in: RoundedRectangle(cornerRadius: 18))
 
                     if events.isEmpty {
-                        ContentUnavailableView("每个重要的时刻，都值得留下", systemImage: "circle.dotted", description: Text("生日、纪念日，或每天留给自己的片刻。\n从一个刻点开始。"))
+                        ContentUnavailableView("还没有刻点", systemImage: "circle.dotted", description: Text("记录一个日期，或添加每年、每月、每天的周期刻点。"))
                     } else if filtered.isEmpty {
                         ContentUnavailableView.search(text: search)
                     } else {
                         ForEach(ClockScale.allCases) { scale in
                             let group = filtered.filter { $0.scale == scale }
                             if !group.isEmpty {
-                                eventGroup(title: scale.title + " · " + ruleTitle(scale), events: group)
+                                eventGroup(title: scale == .life ? "独立刻点 · 一次性" : scale.title + " · " + ruleTitle(scale), events: group,
+                                           explanation: scale == .life ? "一次性刻点仅在这里保存与查看，不出现在人生主场。" : nil)
                             }
                         }
 
@@ -99,10 +105,10 @@ struct EventLibraryView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text(title)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.caption.weight(.medium))
                     .accessibilityIdentifier(titleIdentifier)
                 Spacer()
-                Text("\(events.count)").font(.system(size: 12, design: .monospaced))
+                Text("\(events.count)").font(.caption.monospaced())
             }
             .foregroundStyle(theme.secondaryLabel(for: colorScheme))
 
@@ -129,7 +135,7 @@ struct EventLibraryView: View {
     private func row(_ event: TimeEvent) -> some View {
         HStack(spacing: 14) {
             Image(systemName: event.symbolName).font(.system(size: 19))
-                .foregroundStyle(event.eventColor.color).frame(width: 44, height: 44)
+                .foregroundStyle(event.eventColor.ink(for: colorScheme)).frame(width: 44, height: 44)
                 .background(event.eventColor.color.opacity(0.1), in: RoundedRectangle(cornerRadius: 14))
             VStack(alignment: .leading, spacing: 5) {
                 Text(event.title).font(.body).lineLimit(2)
@@ -138,18 +144,19 @@ struct EventLibraryView: View {
                     .foregroundStyle(theme.secondaryLabel(for: colorScheme))
             }
             Spacer(minLength: 4)
-            Image(systemName: "chevron.right").font(.system(size: 11, weight: .medium)).foregroundStyle(theme.secondaryLabel(for: colorScheme))
+            Image(systemName: "chevron.right").font(.caption2.weight(.medium)).foregroundStyle(theme.secondaryLabel(for: colorScheme))
         }
         .padding(16).contentShape(Rectangle())
     }
 
     private func dateLabel(_ event: TimeEvent) -> String {
+        let anchor = event.anchor(in: ClockEngine.calendar(for: profile))
         switch event.recurrence {
-        case .daily: event.anchorDate.formatted(.dateTime.hour().minute().locale(Locale(identifier: "zh_Hans_CN")))
-        case .weekly: event.anchorDate.formatted(.dateTime.weekday(.wide).hour().minute().locale(Locale(identifier: "zh_Hans_CN")))
-        case .monthly: event.anchorDate.formatted(.dateTime.day().hour().minute().locale(Locale(identifier: "zh_Hans_CN")))
-        case .yearly: event.anchorDate.formatted(.dateTime.month().day().locale(Locale(identifier: "zh_Hans_CN")))
-        case .once: event.anchorDate.formatted(.dateTime.year().month().day().hour().minute().locale(Locale(identifier: "zh_Hans_CN")))
+        case .daily: return anchor.formatted(.dateTime.hour().minute().locale(Locale(identifier: "zh_Hans_CN")))
+        case .weekly: return anchor.formatted(.dateTime.weekday(.wide).hour().minute().locale(Locale(identifier: "zh_Hans_CN")))
+        case .monthly: return anchor.formatted(.dateTime.day().hour().minute().locale(Locale(identifier: "zh_Hans_CN")))
+        case .yearly: return anchor.formatted(.dateTime.month().day().hour().minute().locale(Locale(identifier: "zh_Hans_CN")))
+        case .once: return anchor.formatted(.dateTime.year().month().day().hour().minute().locale(Locale(identifier: "zh_Hans_CN")))
         }
     }
 }

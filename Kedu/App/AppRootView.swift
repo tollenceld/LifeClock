@@ -17,9 +17,12 @@ struct AppRootView: View {
             }
         }
         .environment(\.locale, Locale(identifier: "zh_Hans_CN"))
-        .environment(\.keduReduceMotionOverride, CommandLine.arguments.contains("-uiTesting") && CommandLine.arguments.contains("-uiTestingReduceMotion"))
+        .environment(\.calendar, CivilBirthday.calendar)
+        #if DEBUG
+        .environment(\.keduReduceMotionOverride, AppLaunchOptions.contains("-uiTestingReduceMotion"))
+        .environment(\.keduReduceTransparencyOverride, AppLaunchOptions.contains("-uiTestingReduceTransparency"))
+        #endif
         .preferredColorScheme(appearance.colorScheme)
         .animation(reduceMotion ? nil : .easeInOut(duration: 0.28), value: profiles.first?.onboardingCompleted)
     }
 }
-

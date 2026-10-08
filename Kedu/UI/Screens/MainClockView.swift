@@ -29,23 +29,22 @@ struct MainClockView: View {
     @State private var selectedScale: ClockScale
     @State private var scalePosition: Double
     @State private var presentedSheet: SheetDestination?
-    @State private var lifeIsReversed = false
     @State private var dragStartPosition: Double?
 
     init(profile: UserProfile) {
         self.profile = profile
-        let arguments = CommandLine.arguments
+        #if DEBUG
+        let arguments = AppLaunchOptions.isTesting ? AppLaunchOptions.arguments : []
         let requested = arguments.firstIndex(of: "-uiTestingScale").flatMap { index -> ClockScale? in
             guard arguments.indices.contains(index + 1) else { return nil }
             return ClockScale(rawValue: arguments[index + 1])
         }
+        #else
+        let requested: ClockScale? = nil
+        #endif
         let initial = requested ?? .life
         _selectedScale = State(initialValue: initial)
         _scalePosition = State(initialValue: initial.position)
-    }
-
-    private var lifeIsActive: Bool {
-        selectedScale == .life && presentedSheet == nil && scenePhase == .active
     }
 
     var body: some View {
@@ -53,28 +52,13 @@ struct MainClockView: View {
             theme.background(for: colorScheme).ignoresSafeArea()
             GeometryReader { available in
                 ScrollView {
-                    ZStack {
-                        LifeClockView(
-                            profile: profile,
-                            isActive: lifeIsActive,
-                            isVisible: selectedScale == .life,
-                            isReversed: $lifeIsReversed
-                        )
-                        .opacity(selectedScale == .life ? 1 : 0)
-                        .allowsHitTesting(selectedScale == .life)
-                        .accessibilityHidden(selectedScale != .life)
-
-                        if selectedScale != .life {
-                            CalendarClockView(
-                                profile: profile, events: events,
-                                selection: selectedScale,
-                                isActive: presentedSheet == nil && scenePhase == .active,
-                                onMarkerTap: openEvent
-                            )
-                            .transition(.opacity)
-                        }
-                    }
-                    .frame(height: max(440, available.size.height))
+                    TimePhaseClockView(
+                        profile: profile, events: events, selection: selectedScale,
+                        scalePosition: scalePosition,
+                        isActive: presentedSheet == nil && scenePhase == .active,
+                        availableHeight: available.size.height,
+                        onMarkerTap: openEvent
+                    )
                     .contentShape(Rectangle())
                     .simultaneousGesture(scaleSwipe(width: available.size.width))
                 }
@@ -95,7 +79,7 @@ struct MainClockView: View {
             .padding(.bottom, 8)
         }
         .sheet(item: $presentedSheet) { destination in
-            switch destination {
+            Group { switch destination {
             case .edit(let event):
                 EventEditorView(event: event, defaultRecurrence: event.recurrence, profile: profile)
             case .settings:
@@ -104,7 +88,8 @@ struct MainClockView: View {
                 EventLibraryView(profile: profile)
             case .add:
                 EventEditorView(event: nil, defaultRecurrence: .once, profile: profile)
-            }
+            } }
+            .environment(\.colorScheme, colorScheme)
         }
         .onAppear(perform: openTestingDestination)
         .accessibilityAction(named: "上一个时间尺度") { moveScale(-1) }
@@ -112,12 +97,14 @@ struct MainClockView: View {
     }
 
     private func openTestingDestination() {
-        let arguments = CommandLine.arguments
-        guard arguments.contains("-uiTesting") else { return }
+        #if DEBUG
+        let arguments = AppLaunchOptions.arguments
+        guard AppLaunchOptions.isTesting else { return }
         if arguments.contains("-uiTestingOpenLibrary") { presentedSheet = .library }
         else if arguments.contains("-uiTestingOpenSettings") { presentedSheet = .settings }
         else if arguments.contains("-uiTestingOpenEditEvent"), let event = events.first { presentedSheet = .edit(event) }
         else if arguments.contains("-uiTestingOpenEventEditor") { presentedSheet = .add }
+        #endif
     }
 
     private func openEvent(_ id: UUID) {
@@ -154,8 +141,8 @@ struct MainClockView: View {
 
     private func commit(_ scale: ClockScale) {
         let changed = selectedScale != scale
-        selectedScale = scale
-        withAnimation(reduceMotion ? nil : .spring(response: 0.42, dampingFraction: 0.88)) {
+        withAnimation(reduceMotion ? nil : AppTheme.Motion.scale) {
+            selectedScale = scale
             scalePosition = scale.position
         }
         if changed { HapticManager.shared.selectionChanged(enabled: profile.hapticsEnabled) }

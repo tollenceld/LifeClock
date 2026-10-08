@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
+    "·" : {
+
+    },
     "%@" : {
 
     },
@@ -24,13 +27,25 @@
         }
       }
     },
+    "%@ 个刻点" : {
+
+    },
+    "%@ 个月" : {
+
+    },
     "%@ 岁" : {
 
     },
     "%@主图" : {
 
     },
-    "个值得记住的时刻" : {
+    "≈ %@ 年" : {
+
+    },
+    "一次性刻点保存在刻点集中。每年、每月、每天的刻点分别出现在年、月、日时间场中，轻点标记即可编辑。刻点用于记录，不发送通知。" : {
+
+    },
+    "个刻点" : {
 
     },
     "人生" : {
@@ -70,6 +85,28 @@
         }
       }
     },
+    "减少预计寿命" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "减少预计寿命"
+          }
+        }
+      }
+    },
+    "出生 · %@" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "出生 · %@"
+          }
+        }
+      }
+    },
     "分钟" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -81,7 +118,20 @@
         }
       }
     },
+    "切换尺度与确认设置时提供轻触反馈" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换尺度与确认设置时提供轻触反馈"
+          }
+        }
+      }
+    },
     "刻度" : {
+
+    },
+    "刻度无需账号，没有广告、追踪或分析服务。App 不主动联网，不收集或上传生日、预计寿命、偏好及刻点，也不申请通讯录、系统日历、照片、位置、健康、麦克风、相机或通知权限。" : {
 
     },
     "剩余" : {
@@ -175,6 +225,26 @@
     "只用于计算时间，始终留在你的设备上。" : {
 
     },
+    "增加预计寿命" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "增加预计寿命"
+          }
+        }
+      }
+    },
+    "备份于 %@" : {
+
+    },
+    "备份包含生日和全部刻点，未加密。请保存到你信任的位置。App 不会自动上传或同步。" : {
+
+    },
+    "备份文件包含生日与全部刻点，未加密。只有在你主动导出时才交给系统文件服务；若选择 iCloud 等文件位置，该服务按其自身设置存储文件。恢复备份前会显示摘要，由你确认是否替换。" : {
+
+    },
     "小时" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -182,6 +252,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "小时"
+          }
+        }
+      }
+    },
+    "尚余" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚余"
           }
         }
       }
@@ -199,6 +280,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已度过 · 天"
+          }
+        }
+      }
+    },
+    "已达设定终点" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已达设定终点"
           }
         }
       }
@@ -250,11 +341,44 @@
         }
       }
     },
-    "拖动刻度、切换与保存时提供克制反馈" : {
+    "恢复会替换当前生日、预计寿命、偏好与全部刻点。若想保留现有数据，请先取消并导出一份备份。" : {
+
+    },
+    "数据未被删除。请确认设备有可用空间，并在解锁设备后重试。" : {
+
+    },
+    "日、月、年的起止跟随所在时区的日历；小数天数统一按 86400 秒换算，夏令时切换日可能并非整整一天。" : {
 
     },
     "时间有形，\n生活有刻度。" : {
 
+    },
+    "暂时无法打开本地数据" : {
+
+    },
+    "更换设备或删除 App 前，可以先保存一份备份。" : {
+
+    },
+    "校准预计寿命" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "校准预计寿命"
+          }
+        }
+      }
+    },
+    "此刻" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此刻"
+          }
+        }
+      }
     },
     "此刻的年龄" : {
       "extractionState" : "stale",
@@ -267,6 +391,9 @@
         }
       }
     },
+    "此刻的百分比表示这一设定区间中已度过的比例。达到设定终点后，尚余归零，已度过继续累计。" : {
+
+    },
     "死之时" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -278,27 +405,90 @@
         }
       }
     },
-    "版本 1.0" : {
-
-    },
-    "生之时" : {
+    "死之终 · 预计尚余" : {
       "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "生之时"
+            "value" : "死之终 · 预计尚余"
           }
         }
       }
     },
+    "死之终依据你设定的预计寿命计算，并非死亡预测。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "死之终依据你设定的预计寿命计算，并非死亡预测。"
+          }
+        }
+      }
+    },
+    "死之终依据此设置计算，并非死亡预测" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "死之终依据此设置计算，并非死亡预测"
+          }
+        }
+      }
+    },
+    "每月的日期超过当月天数时，按当月最后一天显示；每年二月二十九日的刻点在非闰年按二月二十八日显示。周期刻点保留你设定的本地日期和时间。" : {
+
+    },
+    "生之始" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "生之始"
+          }
+        }
+      }
+    },
+    "生之始 · 已度过" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "生之始 · 已度过"
+          }
+        }
+      }
+    },
+    "生之始从生日当天的午夜累计。死之终从此刻计算到你设定的预计寿命对应的生日，并非死亡预测。" : {
+
+    },
     "生日" : {
 
     },
-    "生日、纪念日，或每天留给自己的片刻。\n从一个刻点开始。" : {
+    "生日 · %@" : {
 
     },
+    "生日、预计寿命与 %@ 个刻点保存在这台设备上。" : {
+
+    },
+    "生日、预计寿命与外观" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "生日、预计寿命与外观"
+          }
+        }
+      }
+    },
     "生日与人生刻度只保存在这台设备上。" : {
+
+    },
+    "生日使用公历。人生采用你保存生日时的时区作为固定计算依据，旅行或系统时区变化不会改变人生累计。闰日生日在非闰年按二月二十八日计算。" : {
 
     },
     "秒" : {
@@ -312,8 +502,18 @@
         }
       }
     },
-    "调整预期年龄" : {
+    "记录一个日期，或添加每年、每月、每天的周期刻点。" : {
 
+    },
+    "调整预计寿命" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "调整预计寿命"
+          }
+        }
+      }
     },
     "距设定的%lld岁" : {
       "extractionState" : "stale",
@@ -351,11 +551,32 @@
         }
       }
     },
-    "预期年龄" : {
+    "这些数据保存在设备的应用存储中。系统设备备份由你的系统设置控制；删除 App 可能删除本地数据。你可以在设置中导出备份，并自行选择保存位置。" : {
 
     },
-    "预期年龄不是预测，只是一把可以随时调整的尺。" : {
+    "预计寿命" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "预计寿命"
+          }
+        }
+      }
+    },
+    "预计寿命 · %@ 岁" : {
 
+    },
+    "预计寿命 · %lld 岁" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "预计寿命 · %lld 岁"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

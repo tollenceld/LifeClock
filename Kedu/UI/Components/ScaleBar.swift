@@ -18,7 +18,7 @@ struct ScaleBar: View {
                 lifeButton
                 calendarRail
             }
-            .animation(reduceMotion ? nil : .spring(response: 0.35, dampingFraction: 0.88), value: selection == .life)
+            .animation(reduceMotion ? nil : AppTheme.Motion.scale, value: selection == .life)
         }
         .frame(height: 58)
         .accessibilityElement(children: .contain)
@@ -28,7 +28,7 @@ struct ScaleBar: View {
     private var lifeButton: some View {
         Button { select(.life) } label: {
             HStack(spacing: 8) {
-                Image(systemName: "circle.dotted").font(.system(size: 23, weight: .regular))
+                TimeWeaveGlyph().frame(width: 23, height: 23).accessibilityHidden(true)
                 if selection == .life {
                     Text("人生").font(.system(size: 15, weight: .medium))
                         .fixedSize().transition(.opacity)
@@ -40,7 +40,7 @@ struct ScaleBar: View {
         }
         .buttonStyle(.plain)
         .modifier(NavigationGlass(identity: "life", namespace: glassNamespace))
-        .accessibilityLabel("人生时钟")
+        .accessibilityLabel("人生")
         .accessibilityIdentifier("scale.life")
         .accessibilityAddTraits(selection == .life ? .isSelected : [])
     }
@@ -113,8 +113,8 @@ struct ScaleBar: View {
 
     private func select(_ scale: ClockScale) {
         let changed = selection != scale
-        selection = scale
-        withAnimation(reduceMotion ? nil : .spring(response: 0.42, dampingFraction: 0.86)) {
+        withAnimation(reduceMotion ? nil : AppTheme.Motion.scale) {
+            selection = scale
             position = scale.position
         }
         if changed { HapticManager.shared.selectionChanged(enabled: hapticsEnabled) }
@@ -124,12 +124,16 @@ struct ScaleBar: View {
 private struct NavigationGlass: ViewModifier {
     @Environment(AppTheme.self) private var theme
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.keduReduceTransparency) private var reduceTransparency
     let identity: String
     let namespace: Namespace.ID
 
     @ViewBuilder
     func body(content: Content) -> some View {
-        if #available(iOS 26.0, *) {
+        if reduceTransparency {
+            content.background(theme.surface(for: colorScheme), in: Capsule())
+                .overlay(Capsule().stroke(theme.navigationSelectionStroke(for: colorScheme), lineWidth: 1))
+        } else if #available(iOS 26.0, *) {
             content.glassEffect(.regular.interactive(), in: .capsule)
                 .glassEffectID(identity, in: namespace)
         } else {

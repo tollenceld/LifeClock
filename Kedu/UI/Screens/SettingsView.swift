@@ -5,6 +5,8 @@ private enum SettingsSheet: String, Identifiable {
     case birthday
     case targetAge
     case eventLibrary
+    case localData
+    case about
 
     var id: String { rawValue }
 }
@@ -21,8 +23,11 @@ struct SettingsView: View {
     @State private var presentedSheet: SettingsSheet?
     @State private var notice: String?
 
+    private var birthday: Date { profile.birthday(in: ClockEngine.calendar(for: profile)) }
+
     private var currentAge: Int {
-        max(0, Calendar.current.dateComponents([.year], from: profile.birthDate, to: .now).year ?? 0)
+        let calendar = profile.lifeCalendar(from: ClockEngine.calendar(for: profile))
+        return Int(LifeClockSnapshot(at: .now, calendar: calendar, birthDate: profile.birthday(in: calendar), targetAge: profile.targetAge).age)
     }
 
     private var hapticsBinding: Binding<Bool> {
@@ -40,7 +45,7 @@ struct SettingsView: View {
                 VStack(alignment: .leading, spacing: 26) {
                     KeduSheetHeader(
                         title: "设置",
-                        subtitle: "校准属于你的时间仪器",
+                        subtitle: "生日、预计寿命与外观",
                         closeIdentifier: "settings.close"
                     ) {
                         dismiss()
@@ -50,16 +55,15 @@ struct SettingsView: View {
                         sectionTitle("人生刻度")
 
                         LifeCalibrationOverview(
-                            birthDate: profile.birthDate,
-                            currentAge: currentAge,
-                            targetAge: profile.targetAge
+                            profile: profile,
+                            currentAge: currentAge
                         )
 
                         KeduGlassGroup(spacing: 10) {
                             VStack(spacing: 0) {
                                 KeduCalibrationField(
                                     title: "生日",
-                                    value: profile.birthDate.formatted(.dateTime.year().month(.twoDigits).day(.twoDigits).locale(Locale(identifier: "zh_Hans_CN"))),
+                                    value: birthday.formatted(.dateTime.year().month(.twoDigits).day(.twoDigits).locale(Locale(identifier: "zh_Hans_CN"))),
                                     helper: "修改后将重新计算人生刻度",
                                     systemImage: "calendar"
                                 ) {
@@ -70,9 +74,9 @@ struct SettingsView: View {
                                 divider
 
                                 KeduCalibrationField(
-                                    title: "预期年龄",
+                                    title: "预计寿命",
                                     value: "\(profile.targetAge) 岁",
-                                    helper: "范围为当前年龄之后至 150 岁",
+                                    helper: "1 至 150 岁，作为人生时间尺度",
                                     systemImage: "ruler"
                                 ) {
                                     presentedSheet = .targetAge
@@ -82,6 +86,11 @@ struct SettingsView: View {
                             .padding(.horizontal, 4)
                             .background(theme.elevatedSurface(for: colorScheme).opacity(0.22), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
                         }
+                        Text("死之终依据你设定的预计寿命计算，并非死亡预测。")
+                            .font(.caption)
+                            .foregroundStyle(theme.secondaryLabel(for: colorScheme))
+                            .fixedSize(horizontal: false, vertical: true)
+                            .accessibilityIdentifier("settings.lifeBasis")
                     }
 
                     VStack(alignment: .leading, spacing: 10) {
@@ -104,7 +113,11 @@ struct SettingsView: View {
                         sectionTitle("外观")
                         HStack(spacing: 10) {
                             ForEach(AppAppearance.allCases) { option in
-                                Button { appearance = option } label: {
+                                Button {
+                                    guard appearance != option else { return }
+                                    appearance = option
+                                    HapticManager.shared.selectionChanged(enabled: profile.hapticsEnabled)
+                                } label: {
                                     VStack(spacing: 10) {
                                         RoundedRectangle(cornerRadius: 12)
                                             .fill(option == .light ? Color(red: 0.96, green: 0.94, blue: 0.89) : Color(red: 0.08, green: 0.09, blue: 0.08))
@@ -117,7 +130,7 @@ struct SettingsView: View {
                                                 }
                                             }
                                             .frame(height: 52)
-                                        Text(option.title).font(.system(size: 12, weight: .medium))
+                                        Text(option.title).font(.caption.weight(.medium))
                                     }
                                     .padding(10).frame(maxWidth: .infinity)
                                     .background(theme.surface(for: colorScheme), in: RoundedRectangle(cornerRadius: 18))
@@ -136,24 +149,39 @@ struct SettingsView: View {
                         Toggle(isOn: hapticsBinding) {
                             VStack(alignment: .leading, spacing: 3) {
                                 Text("轻触反馈")
-                                    .font(.system(size: 15, weight: .medium))
-                                Text("拖动刻度、切换与保存时提供克制反馈")
-                                    .font(.system(size: 10))
+                                    .font(.subheadline.weight(.medium))
+                                Text("切换尺度与确认设置时提供轻触反馈")
+                                    .font(.caption2)
                                     .foregroundStyle(theme.secondaryLabel(for: colorScheme))
                             }
                         }
-                        .toggleStyle(KeduPrecisionToggleStyle())
+                        .toggleStyle(.switch)
+                        .tint(theme.accent)
                         .padding(16)
                         .background(theme.elevatedSurface(for: colorScheme).opacity(0.22), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
                         .accessibilityIdentifier("settings.haptics")
                     }
 
+                    VStack(alignment: .leading, spacing: 10) {
+                        sectionTitle("数据与说明")
+                        KeduGlassSurface {
+                            VStack(spacing: 0) {
+                                KeduCalibrationField(title: "本地数据", value: "备份与恢复", systemImage: "externaldrive") {
+                                    presentedSheet = .localData
+                                }.accessibilityIdentifier("settings.data")
+                                divider
+                                KeduCalibrationField(title: "关于刻度", value: "计算依据与隐私", systemImage: "info.circle") {
+                                    presentedSheet = .about
+                                }.accessibilityIdentifier("settings.about")
+                            }
+                        }
+                    }
                     HStack(alignment: .firstTextBaseline) {
                         Label("数据仅保存在本机", systemImage: "checkmark.shield")
                         Spacer()
-                        Text("版本 1.0")
+                        Text(AppInformationView.version)
                     }
-                    .font(.system(size: 11, design: .monospaced))
+                    .font(.caption2.monospaced())
                     .foregroundStyle(theme.secondaryLabel(for: colorScheme))
                     .padding(.top, 10)
                     .padding(.bottom, 24)
@@ -174,13 +202,15 @@ struct SettingsView: View {
         .sheet(item: $presentedSheet) { destination in
             switch destination {
             case .birthday:
-                BirthdayCalibrationSheet(initialDate: profile.birthDate) { value in
-                    updateBirthday(value)
+                let calendar = profile.lifeCalendar(from: ClockEngine.calendar(for: profile))
+                BirthdayCalibrationSheet(initialDate: profile.birthday(in: calendar), calendar: calendar) { value in
+                    updateBirthday(value, calendar: calendar)
                 }
             case .targetAge:
                 AgeCalibrationSheet(
                     initialAge: profile.targetAge,
-                    minimumAge: currentAge + 1
+                    minimumAge: 1,
+                    hapticsEnabled: profile.hapticsEnabled
                 ) { value in
                     updateTargetAge(value)
                 }
@@ -188,6 +218,10 @@ struct SettingsView: View {
                 EventLibraryView(profile: profile)
                     .presentationDetents([.large])
                     .presentationDragIndicator(.hidden)
+            case .localData:
+                LocalDataView(profile: profile)
+            case .about:
+                AppInformationView()
             }
         }
         .animation(.easeInOut(duration: 0.2), value: notice)
@@ -202,24 +236,25 @@ struct SettingsView: View {
 
     private func sectionTitle(_ title: String) -> some View {
         Text(title)
-            .font(.system(size: 13, weight: .semibold))
+            .font(.subheadline.weight(.semibold))
             .foregroundStyle(theme.navigationLabel(for: colorScheme))
     }
 
-    private func updateBirthday(_ value: Date) {
+    private func updateBirthday(_ value: Date, calendar: Calendar) {
         let oldBirthday = profile.birthDate
-        let oldTargetAge = profile.targetAge
-        profile.birthDate = Calendar.current.startOfDay(for: min(.now, value))
-        profile.targetAge = min(150, max(profile.targetAge, currentAge + 1))
+        let oldComponents = profile.birthDateComponents
+        let oldTimeZone = profile.birthTimeZoneIdentifier
+        profile.setBirthday(min(.now, value), calendar: calendar)
         persist {
             profile.birthDate = oldBirthday
-            profile.targetAge = oldTargetAge
+            profile.birthDateComponents = oldComponents
+            profile.birthTimeZoneIdentifier = oldTimeZone
         }
     }
 
     private func updateTargetAge(_ value: Int) {
         let oldValue = profile.targetAge
-        profile.targetAge = min(150, max(currentAge + 1, value))
+        profile.targetAge = min(150, max(1, value))
         persist { profile.targetAge = oldValue }
     }
 
@@ -244,53 +279,63 @@ struct SettingsView: View {
 private struct LifeCalibrationOverview: View {
     @Environment(AppTheme.self) private var theme
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    let birthDate: Date
+    let profile: UserProfile
     let currentAge: Int
-    let targetAge: Int
-
-    private var progress: Double { min(1, max(0, Double(currentAge) / Double(max(1, targetAge)))) }
+    private var targetAge: Int { profile.targetAge }
+    private var birthDate: Date { profile.birthday(in: ClockEngine.calendar(for: profile)) }
 
     var body: some View {
+        let calendar = profile.lifeCalendar(from: ClockEngine.calendar(for: profile))
+        let snapshot = LifeClockSnapshot(at: .now, calendar: calendar, birthDate: profile.birthday(in: calendar), targetAge: targetAge)
+        let contexts = ClockScale.allCases.map {
+            TimePhaseContext.make(scale: $0, at: snapshot.date, calendar: calendar, profile: profile, events: [])
+        }
         KeduGlassSurface(role: .standard, cornerRadius: AppTheme.Radius.hero) {
             VStack(spacing: 16) {
-                HStack(alignment: .firstTextBaseline) {
+                (dynamicTypeSize.isAccessibilitySize ? AnyLayout(VStackLayout(alignment: .leading, spacing: 18)) : AnyLayout(HStackLayout(alignment: .firstTextBaseline))) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("生日")
-                            .font(.system(size: 11, weight: .medium))
+                            .font(.caption2.weight(.medium))
                             .foregroundStyle(theme.secondaryLabel(for: colorScheme))
                         Text(birthDate.formatted(.dateTime.year().month(.twoDigits).day(.twoDigits).locale(Locale(identifier: "zh_Hans_CN"))))
-                            .font(.system(size: 18, weight: .medium, design: .monospaced))
+                            .font(.title3.monospaced().weight(.medium))
                             .monospacedDigit()
                     }
 
-                    Spacer()
+                    if !dynamicTypeSize.isAccessibilitySize { Spacer() }
 
                     VStack(alignment: .trailing, spacing: 4) {
-                        Text("预期年龄")
-                            .font(.system(size: 11, weight: .medium))
+                        Text("预计寿命")
+                            .font(.caption2.weight(.medium))
                             .foregroundStyle(theme.secondaryLabel(for: colorScheme))
                         Text("\(targetAge) 岁")
-                            .font(.system(size: 18, weight: .medium, design: .monospaced))
+                            .font(.title3.monospaced().weight(.medium))
                             .monospacedDigit()
                     }
                 }
 
-                KeduTickRail(progress: progress, divisions: 45)
+                TimeWeaveField(contexts: contexts,
+                               snapshot: TimePhaseSnapshot(scale: .life, interval: DateInterval(start: snapshot.birthInstant, end: snapshot.targetInstant), at: snapshot.date),
+                               zoom: PhaseZoom.level(for: .life), showsMinute: false)
+                    .frame(height: 120)
+                    .accessibilityHidden(true)
+                LifeEquivalentReadout(years: snapshot.age)
 
                 HStack {
                     Text("当前 \(currentAge) 岁")
                     Spacer()
-                    Text(progress.formatted(.percent.precision(.fractionLength(1))))
+                    Text(snapshot.progress.formatted(.percent.precision(.fractionLength(1))))
                 }
-                .font(.system(size: 10, weight: .medium, design: .monospaced))
+                .font(.caption2.monospaced().weight(.medium))
                 .foregroundStyle(theme.secondaryLabel(for: colorScheme))
             }
             .padding(18)
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("人生刻度")
-        .accessibilityValue("当前 \(currentAge) 岁，预期年龄 \(targetAge) 岁")
+        .accessibilityValue("当前 \(currentAge) 岁，此刻 \(snapshot.progress.formatted(.percent.precision(.fractionLength(1))))，预计寿命 \(targetAge) 岁，已度过约 \(snapshot.age.formatted(.number.precision(.fractionLength(4)))) 年")
     }
 }
 
@@ -300,10 +345,12 @@ private struct BirthdayCalibrationSheet: View {
     @Environment(\.colorScheme) private var colorScheme
 
     @State private var date: Date
+    let calendar: Calendar
     let commit: (Date) -> Void
 
-    init(initialDate: Date, commit: @escaping (Date) -> Void) {
+    init(initialDate: Date, calendar: Calendar, commit: @escaping (Date) -> Void) {
         _date = State(initialValue: initialDate)
+        self.calendar = calendar
         self.commit = commit
     }
 
@@ -311,33 +358,41 @@ private struct BirthdayCalibrationSheet: View {
         ZStack {
             theme.background(for: colorScheme).ignoresSafeArea()
 
-            VStack(spacing: 20) {
-                KeduSheetHeader(title: "校准生日", subtitle: "选择你来到这里的那一天") {
-                    dismiss()
-                }
+            ScrollView {
+                VStack(spacing: 20) {
+                    KeduSheetHeader(title: "校准生日", subtitle: "选择你来到这里的那一天") {
+                        dismiss()
+                    }
 
-                KeduGlassSurface(role: .standard) {
-                    DatePicker(
-                        "生日",
-                        selection: $date,
-                        in: (Calendar.current.date(byAdding: .year, value: -150, to: .now) ?? .distantPast)...Date.now,
-                        displayedComponents: .date
-                    )
-                    .datePickerStyle(.wheel)
-                    .labelsHidden()
-                    .tint(theme.accent)
-                    .padding(.horizontal, 8)
-                }
+                    KeduGlassSurface(role: .standard) {
+                        DatePicker(
+                            "生日",
+                            selection: $date,
+                            in: CivilBirthday.allowedRange(calendar: calendar),
+                            displayedComponents: .date
+                        )
+                        .datePickerStyle(.wheel)
+                        .environment(\.calendar, calendar)
+                        .environment(\.timeZone, calendar.timeZone)
+                        .labelsHidden()
+                        .tint(theme.accent)
+                        .padding(.horizontal, 8)
+                    }
 
-                Spacer()
-
-                KeduActionButton(title: "应用生日", systemImage: "checkmark") {
-                    commit(date)
-                    dismiss()
                 }
-                .accessibilityIdentifier("settings.birthday.apply")
+                .padding(20)
             }
-            .padding(20)
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            KeduActionButton(title: "应用生日", systemImage: "checkmark") {
+                commit(date)
+                dismiss()
+            }
+            .accessibilityIdentifier("settings.birthday.apply")
+            .padding(.horizontal, 20)
+            .padding(.top, 10)
+            .padding(.bottom, 12)
+            .background(theme.background(for: colorScheme))
         }
         .presentationDetents([.large])
         .presentationDragIndicator(.hidden)
@@ -352,11 +407,13 @@ private struct AgeCalibrationSheet: View {
     @State private var age: Int
     @State private var dragStartAge: Int?
     let minimumAge: Int
+    let hapticsEnabled: Bool
     let commit: (Int) -> Void
 
-    init(initialAge: Int, minimumAge: Int, commit: @escaping (Int) -> Void) {
+    init(initialAge: Int, minimumAge: Int, hapticsEnabled: Bool, commit: @escaping (Int) -> Void) {
         _age = State(initialValue: initialAge)
         self.minimumAge = minimumAge
+        self.hapticsEnabled = hapticsEnabled
         self.commit = commit
     }
 
@@ -364,53 +421,59 @@ private struct AgeCalibrationSheet: View {
         ZStack {
             theme.background(for: colorScheme).ignoresSafeArea()
 
-            VStack(spacing: 24) {
-                KeduSheetHeader(title: "校准预期年龄", subtitle: "这不是预测，只是一把属于你的尺") {
-                    dismiss()
-                }
+            ScrollView {
+                VStack(spacing: 24) {
+                    KeduSheetHeader(title: "校准预计寿命", subtitle: "死之终依据此设置计算，并非死亡预测") {
+                        dismiss()
+                    }
 
-                KeduGlassSurface(role: .standard, cornerRadius: AppTheme.Radius.hero) {
-                    VStack(spacing: 24) {
-                        HStack(alignment: .firstTextBaseline, spacing: 8) {
-                            Text("\(age)")
-                                .font(.system(size: 76, weight: .light, design: .monospaced))
-                                .monospacedDigit()
-                                .contentTransition(.numericText())
-                            Text("岁")
-                                .font(.system(size: 15, design: .monospaced))
+                    KeduGlassSurface(role: .standard, cornerRadius: AppTheme.Radius.hero) {
+                        VStack(spacing: 24) {
+                            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                                Text("\(age)")
+                                    .font(.system(size: 76, weight: .light, design: .monospaced))
+                                    .monospacedDigit()
+                                    .contentTransition(.numericText())
+                                Text("岁")
+                                    .font(.system(size: 15, design: .monospaced))
+                                    .foregroundStyle(theme.secondaryLabel(for: colorScheme))
+                            }
+
+                            HStack(spacing: 12) {
+                                ageButton("minus", delta: -1)
+                                KeduTickRail(progress: normalizedAge, divisions: 41)
+                                    .contentShape(Rectangle())
+                                    .gesture(ageDrag)
+                                ageButton("plus", delta: 1)
+                            }
+
+                            Text("左右拖动刻度，或使用两侧按钮微调")
+                                .font(.caption2.monospaced())
                                 .foregroundStyle(theme.secondaryLabel(for: colorScheme))
                         }
-
-                        HStack(spacing: 12) {
-                            ageButton("minus", delta: -1)
-                            KeduTickRail(progress: normalizedAge, divisions: 41)
-                                .contentShape(Rectangle())
-                                .gesture(ageDrag)
-                            ageButton("plus", delta: 1)
-                        }
-
-                        Text("左右拖动刻度，或使用两侧按钮微调")
-                            .font(.system(size: 11, design: .monospaced))
-                            .foregroundStyle(theme.secondaryLabel(for: colorScheme))
+                        .padding(22)
                     }
-                    .padding(22)
-                }
-                .accessibilityElement(children: .contain)
-                .accessibilityLabel("预期年龄")
-                .accessibilityValue("\(age) 岁")
-                .accessibilityAdjustableAction { direction in
-                    adjust(direction == .increment ? 1 : -1)
-                }
+                    .accessibilityElement(children: .contain)
+                    .accessibilityLabel("预计寿命")
+                    .accessibilityValue("\(age) 岁")
+                    .accessibilityAdjustableAction { direction in
+                        adjust(direction == .increment ? 1 : -1)
+                    }
 
-                Spacer()
-
-                KeduActionButton(title: "应用年龄", systemImage: "checkmark") {
-                    commit(age)
-                    dismiss()
                 }
-                .accessibilityIdentifier("settings.age.apply")
+                .padding(20)
             }
-            .padding(20)
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            KeduActionButton(title: "应用预计寿命", systemImage: "checkmark") {
+                commit(age)
+                dismiss()
+            }
+            .accessibilityIdentifier("settings.age.apply")
+            .padding(.horizontal, 20)
+            .padding(.top, 10)
+            .padding(.bottom, 12)
+            .background(theme.background(for: colorScheme))
         }
         .presentationDetents([.large])
         .presentationDragIndicator(.hidden)
@@ -429,7 +492,7 @@ private struct AgeCalibrationSheet: View {
                 let next = min(150, max(minimumAge, dragStartAge + delta))
                 if next != age {
                     age = next
-                    HapticManager.shared.selectionChanged(enabled: true)
+                    HapticManager.shared.selectionChanged(enabled: hapticsEnabled)
                 }
             }
             .onEnded { _ in dragStartAge = nil }
@@ -446,13 +509,14 @@ private struct AgeCalibrationSheet: View {
         }
         .buttonStyle(.plain)
         .buttonRepeatBehavior(.enabled)
+        .accessibilityLabel(delta > 0 ? "增加预计寿命" : "减少预计寿命")
     }
 
     private func adjust(_ delta: Int) {
         let next = min(150, max(minimumAge, age + delta))
         guard next != age else { return }
         age = next
-        HapticManager.shared.selectionChanged(enabled: true)
+        HapticManager.shared.selectionChanged(enabled: hapticsEnabled)
     }
 }
 

@@ -31,7 +31,7 @@ enum ClockScale: String, CaseIterable, Codable, Identifiable, Sendable {
 
     var accessibilityTitle: String {
         switch self {
-        case .life: "人生时钟"
+        case .life: "人生"
         case .year: "年度时钟"
         case .month: "月度时钟"
         case .day: "今日时钟"

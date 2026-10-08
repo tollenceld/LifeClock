@@ -10,7 +10,7 @@ private enum EventEditorSheet: String, Identifiable {
 
 private extension RecurrenceRule {
     var editorScaleDescription: String {
-        scale.map { "\($0.title)尺度" } ?? "历史刻点 · 已停用"
+        self == .once ? "仅在刻点集显示" : (scale.map { "\($0.title)尺度" } ?? "历史刻点 · 已停用")
     }
 }
 
@@ -30,12 +30,12 @@ struct EventEditorView: View {
     @State private var anchorDate: Date
     @State private var presentedSheet: EventEditorSheet?
     @State private var saveError: String?
+    @State private var showDiscardConfirmation = false
+    @State private var isCommitting = false
+    @State private var original: EventDraft
     @FocusState private var titleFocused: Bool
 
-    private let symbols = [
-        "circle.fill", "birthday.cake.fill", "creditcard.fill", "pills.fill",
-        "figure.run", "briefcase.fill", "heart.fill", "book.fill"
-    ]
+    private let symbols = EventSymbol.choices
 
     init(event: TimeEvent?, defaultRecurrence: RecurrenceRule, profile: UserProfile) {
         self.event = event
@@ -45,11 +45,19 @@ struct EventEditorView: View {
         _eventColor = State(initialValue: event?.eventColor ?? .jade)
         let supportedDefault = RecurrenceRule.supportedCases.contains(defaultRecurrence) ? defaultRecurrence : .once
         _recurrence = State(initialValue: event?.recurrence ?? supportedDefault)
-        _anchorDate = State(initialValue: event?.anchorDate ?? .now)
+        let date = event?.anchor(in: ClockEngine.calendar(for: profile)) ?? .now
+        _anchorDate = State(initialValue: date)
+        _original = State(initialValue: EventDraft(title: event?.title ?? "", symbol: event?.symbolName ?? "circle.fill",
+                                                 color: event?.eventColor ?? .jade,
+                                                 recurrence: event?.recurrence ?? supportedDefault, date: date))
     }
 
     private var trimmedTitle: String {
         title.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var hasUnsavedChanges: Bool {
+        original != EventDraft(title: title, symbol: symbolName, color: eventColor, recurrence: recurrence, date: anchorDate)
     }
 
     var body: some View {
@@ -60,10 +68,11 @@ struct EventEditorView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     KeduSheetHeader(
                         title: event == nil ? "添加刻点" : "编辑刻点",
-                        subtitle: event?.recurrence == .weekly ? "保留记录，或选择新的重复规则" : "把一个时刻放进它所属的尺度",
+                        subtitle: event?.recurrence == .weekly ? "保留记录，或选择新的重复规则" : "记录一个时刻，或设置周期刻点",
                         closeIdentifier: "event.close"
                     ) {
-                        dismiss()
+                        titleFocused = false
+                        if hasUnsavedChanges { showDiscardConfirmation = true } else { dismiss() }
                     }
 
                     EventPreviewPanel(
@@ -81,14 +90,15 @@ struct EventEditorView: View {
                             HStack(spacing: 12) {
                                 Image(systemName: symbolName)
                                     .font(.system(size: 18, weight: .medium))
-                                    .foregroundStyle(eventColor.color)
+                                    .foregroundStyle(eventColor.ink(for: colorScheme))
                                     .frame(width: 44, height: 44)
                                     .background(eventColor.color.opacity(0.12), in: Circle())
 
                                 TextField("给这个时刻起个名字", text: $title)
-                                    .font(.system(size: 17, weight: .medium))
+                                    .font(.body.weight(.medium))
                                     .focused($titleFocused)
                                     .submitLabel(.done)
+                                    .onSubmit { titleFocused = false }
                                     .accessibilityIdentifier("event.title")
 
                                 if !title.isEmpty {
@@ -182,7 +192,7 @@ struct EventEditorView: View {
             KeduActionButton(
                 title: event == nil ? "保存刻点" : "保存修改",
                 systemImage: "checkmark",
-                isDisabled: trimmedTitle.isEmpty,
+                isDisabled: trimmedTitle.isEmpty || isCommitting,
                 action: save
             )
             .accessibilityIdentifier("event.save")
@@ -208,12 +218,17 @@ struct EventEditorView: View {
                 )
             }
         }
+        .interactiveDismissDisabled(hasUnsavedChanges)
+        .alert("放弃尚未保存的修改？", isPresented: $showDiscardConfirmation) {
+            Button("放弃修改", role: .destructive) { dismiss() }
+            Button("继续编辑", role: .cancel) { }
+        }
         .animation(.easeInOut(duration: 0.2), value: saveError)
     }
 
     private func sectionTitle(_ title: String) -> some View {
         Text(title)
-            .font(.system(size: 13, weight: .semibold))
+            .font(.subheadline.weight(.semibold))
             .foregroundStyle(theme.navigationLabel(for: colorScheme))
     }
 
@@ -223,7 +238,7 @@ struct EventEditorView: View {
                 recurrence == .weekly ? "历史刻点 · 每周规则已停用" : "保存后转换为\(recurrence.title)规则",
                 systemImage: "clock.arrow.circlepath"
             )
-            .font(.system(size: 13, weight: .medium))
+            .font(.subheadline.weight(.medium))
 
             Text(recurrence == .weekly
                  ? "可以修改名称、时间和外观。直接保存会保留历史规则；选择下方选项可转换规则。"
@@ -233,7 +248,7 @@ struct EventEditorView: View {
 
             if recurrence != .weekly {
                 Button("保留历史规则") { recurrence = .weekly }
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.subheadline.weight(.medium))
                     .foregroundStyle(theme.accentInk(for: colorScheme))
                     .frame(minHeight: 44)
                     .accessibilityIdentifier("event.history.keep")
@@ -266,30 +281,30 @@ struct EventEditorView: View {
     }
 
     private var validDateRange: ClosedRange<Date> {
-        guard recurrence == .once else { return Date.distantPast...Date.distantFuture }
-        let calendar = ClockEngine.calendar(for: profile)
-        let end = calendar.date(byAdding: .year, value: profile.targetAge, to: profile.birthDate) ?? .distantFuture
-        return profile.birthDate...end
+        Date.distantPast...Date.distantFuture
     }
 
     private func save() {
-        guard !trimmedTitle.isEmpty else { return }
+        guard !trimmedTitle.isEmpty, !isCommitting else { return }
+        isCommitting = true
 
         if let event {
             event.title = trimmedTitle
             event.symbolName = symbolName
             event.eventColor = eventColor
             event.recurrence = recurrence
-            event.anchorDate = anchorDate
+            event.setAnchor(anchorDate, calendar: ClockEngine.calendar(for: profile))
             event.updatedAt = .now
         } else {
-            modelContext.insert(TimeEvent(
+            let created = TimeEvent(
                 title: trimmedTitle,
                 symbolName: symbolName,
                 color: eventColor,
                 recurrence: recurrence,
                 anchorDate: anchorDate
-            ))
+            )
+            created.setAnchor(anchorDate, calendar: ClockEngine.calendar(for: profile))
+            modelContext.insert(created)
         }
 
         do {
@@ -298,12 +313,14 @@ struct EventEditorView: View {
             dismiss()
         } catch {
             modelContext.rollback()
+            isCommitting = false
             saveError = "刻点未能保存，请再试一次。"
         }
     }
 
     private func delete() {
-        guard let event else { return }
+        guard let event, !isCommitting else { return }
+        isCommitting = true
         modelContext.delete(event)
         do {
             try modelContext.save()
@@ -314,6 +331,7 @@ struct EventEditorView: View {
             }
         } catch {
             modelContext.rollback()
+            isCommitting = false
             saveError = "刻点未能删除，请再试一次。"
             presentedSheet = nil
         }
@@ -335,7 +353,7 @@ private struct EventPreviewPanel: View {
             HStack(spacing: 16) {
                 Image(systemName: symbolName)
                     .font(.system(size: 23, weight: .medium))
-                    .foregroundStyle(eventColor.color)
+                    .foregroundStyle(eventColor.ink(for: colorScheme))
                     .frame(width: 58, height: 58)
                     .background(eventColor.color.opacity(0.13), in: RoundedRectangle(cornerRadius: 19, style: .continuous))
                     .overlay {
@@ -345,12 +363,12 @@ private struct EventPreviewPanel: View {
 
                 VStack(alignment: .leading, spacing: 5) {
                     Text(title.isEmpty ? "未命名刻点" : title)
-                        .font(.system(size: 20, weight: .semibold))
+                        .font(.title3.weight(.semibold))
                         .foregroundStyle(title.isEmpty ? theme.secondaryLabel(for: colorScheme) : Color.primary)
                         .lineLimit(1)
 
                     Text("\(recurrence.title) · \(previewDate)")
-                        .font(.system(size: 11, design: .monospaced))
+                        .font(.caption2.monospaced())
                         .foregroundStyle(theme.secondaryLabel(for: colorScheme))
                         .monospacedDigit()
                 }
@@ -358,10 +376,10 @@ private struct EventPreviewPanel: View {
                 Spacer(minLength: 6)
 
                 VStack(alignment: .trailing, spacing: 4) {
-                    Text(recurrence.scale?.title ?? "历史")
-                        .font(.system(size: 22, weight: .light, design: .monospaced))
-                    Text(recurrence.scale == nil ? "已停用" : "尺度")
-                        .font(.system(size: 9, design: .monospaced))
+                    Text(recurrence == .once ? "独立" : (recurrence.scale?.title ?? "历史"))
+                        .font(.title2.monospaced().weight(.light))
+                    Text(recurrence == .once ? "刻点" : (recurrence.scale == nil ? "已停用" : "尺度"))
+                        .font(.caption2.monospaced())
                         .foregroundStyle(theme.secondaryLabel(for: colorScheme))
                 }
             }
@@ -413,13 +431,13 @@ private struct AppearanceSelector: View {
 
                                 Image(systemName: symbol)
                                     .font(.system(size: 19, weight: .medium))
-                                    .foregroundStyle(symbolName == symbol ? eventColor.color : theme.navigationLabel(for: colorScheme))
+                                    .foregroundStyle(symbolName == symbol ? eventColor.ink(for: colorScheme) : theme.navigationLabel(for: colorScheme))
                             }
                             .frame(maxWidth: .infinity, minHeight: 50)
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
-                        .accessibilityLabel("符号 \(symbol)")
+                        .accessibilityLabel(EventSymbol.title(for: symbol))
                         .accessibilityAddTraits(symbolName == symbol ? .isSelected : [])
                     }
                 }
@@ -469,7 +487,7 @@ private struct AppearanceSelector: View {
         if reduceMotion {
             symbolName = symbol
         } else {
-            withAnimation(.spring(response: 0.36, dampingFraction: 0.84)) {
+            withAnimation(.easeInOut(duration: 0.22)) {
                 symbolName = symbol
             }
         }
@@ -480,7 +498,7 @@ private struct AppearanceSelector: View {
         if reduceMotion {
             eventColor = color
         } else {
-            withAnimation(.spring(response: 0.36, dampingFraction: 0.84)) {
+            withAnimation(.easeInOut(duration: 0.22)) {
                 eventColor = color
             }
         }
@@ -500,35 +518,49 @@ private struct EventDateCalibrationSheet: View {
         ZStack {
             theme.background(for: colorScheme).ignoresSafeArea()
 
-            VStack(spacing: 20) {
-                KeduSheetHeader(title: "校准时间", subtitle: "\(recurrence.title) · \(recurrence.editorScaleDescription)") {
-                    dismiss()
-                }
+            ScrollView {
+                VStack(spacing: 20) {
+                    KeduSheetHeader(title: "校准时间", subtitle: "\(recurrence.title) · \(recurrence.editorScaleDescription)") {
+                        dismiss()
+                    }
 
-                KeduGlassSurface(role: .standard) {
-                    DatePicker(
-                        "时间",
-                        selection: $date,
-                        in: validRange,
-                        displayedComponents: recurrence == .daily ? [.hourAndMinute] : [.date, .hourAndMinute]
-                    )
-                    .datePickerStyle(.wheel)
-                    .labelsHidden()
-                    .tint(theme.accent)
-                    .padding(.horizontal, 8)
-                    .accessibilityIdentifier("event.date.picker")
-                }
+                    KeduGlassSurface(role: .standard) {
+                        DatePicker(
+                            "时间",
+                            selection: $date,
+                            in: validRange,
+                            displayedComponents: recurrence == .daily ? [.hourAndMinute] : [.date, .hourAndMinute]
+                        )
+                        .datePickerStyle(.wheel)
+                        .labelsHidden()
+                        .tint(theme.accent)
+                        .padding(.horizontal, 8)
+                        .accessibilityIdentifier("event.date.picker")
+                    }
 
-                Spacer()
-
-                KeduActionButton(title: "应用时间", systemImage: "checkmark") {
-                    dismiss()
                 }
-                .accessibilityIdentifier("event.date.apply")
+                .padding(20)
             }
-            .padding(20)
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            KeduActionButton(title: "应用时间", systemImage: "checkmark") {
+                dismiss()
+            }
+            .accessibilityIdentifier("event.date.apply")
+            .padding(.horizontal, 20)
+            .padding(.top, 10)
+            .padding(.bottom, 12)
+            .background(theme.background(for: colorScheme))
         }
         .presentationDetents([.large])
         .presentationDragIndicator(.hidden)
     }
+}
+
+private struct EventDraft: Equatable {
+    let title: String
+    let symbol: String
+    let color: EventColor
+    let recurrence: RecurrenceRule
+    let date: Date
 }

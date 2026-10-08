@@ -7,14 +7,15 @@ struct OnboardingView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.keduReduceMotion) private var reduceMotion
 
-    @State private var birthDate = Calendar.current.date(
+    @State private var birthDate = CivilBirthday.calendar.date(
         from: DateComponents(year: 2000, month: 1, day: 1)
     ) ?? .now
     @State private var targetAge = 85
     @State private var saveError = false
+    @State private var completed = false
 
     private var currentAge: Int {
-        max(0, Calendar.current.dateComponents([.year], from: birthDate, to: .now).year ?? 0)
+        Int(LifeClockSnapshot(at: .now, calendar: Calendar(identifier: .gregorian), birthDate: birthDate, targetAge: targetAge).age)
     }
 
     var body: some View {
@@ -25,22 +26,22 @@ struct OnboardingView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     HStack {
                         Text("刻度")
-                            .font(.system(size: 16, weight: .medium, design: .monospaced))
+                            .font(.callout.monospaced().weight(.medium))
                             .foregroundStyle(theme.secondaryLabel(for: colorScheme))
                         Spacer()
                         Text("仅需一次设置")
-                            .font(.system(size: 11, weight: .medium, design: .monospaced))
+                            .font(.caption2.monospaced().weight(.medium))
                             .foregroundStyle(theme.tertiaryLabel(for: colorScheme))
                     }
-                    .frame(height: 44)
+                    .frame(minHeight: 44)
 
                     Text("时间有形，\n生活有刻度。")
-                        .font(.system(size: 42, weight: .light))
+                        .font(.largeTitle.weight(.light))
                         .tracking(-0.9)
                         .padding(.top, 24)
 
                     Text("从你的生日开始，看见此刻在人生中的位置。")
-                        .font(.system(size: 15))
+                        .font(.subheadline)
                         .foregroundStyle(theme.secondaryLabel(for: colorScheme))
                         .padding(.top, 8)
 
@@ -59,10 +60,10 @@ struct OnboardingView: View {
         .safeAreaInset(edge: .bottom, spacing: 0) {
             VStack(alignment: .leading, spacing: 10) {
                 Text("生日与人生刻度只保存在这台设备上。")
-                    .font(.system(size: 11, design: .monospaced))
+                    .font(.caption2.monospaced())
                     .foregroundStyle(theme.secondaryLabel(for: colorScheme))
 
-                KeduActionButton(title: "进入刻度", systemImage: "arrow.right") {
+                KeduActionButton(title: "进入刻度", systemImage: "arrow.right", isDisabled: completed) {
                     completeOnboarding()
                 }
                 .accessibilityIdentifier("onboarding.finish")
@@ -84,16 +85,20 @@ struct OnboardingView: View {
     }
 
     private func completeOnboarding() {
-        let normalizedBirthDate = Calendar.current.startOfDay(for: min(.now, birthDate))
+        guard !completed else { return }
+        completed = true
+        let normalizedBirthDate = CivilBirthday.calendar.startOfDay(for: min(.now, birthDate))
         let normalizedAge = min(150, max(currentAge + 1, targetAge))
         let profile = UserProfile(birthDate: normalizedBirthDate, targetAge: normalizedAge)
+        profile.setBirthday(normalizedBirthDate, calendar: CivilBirthday.calendar)
         modelContext.insert(profile)
 
         do {
             try modelContext.save()
             HapticManager.shared.saved(enabled: true)
         } catch {
-            modelContext.delete(profile)
+            modelContext.rollback()
+            completed = false
             saveError = true
         }
     }
@@ -107,18 +112,28 @@ private struct LifeSetupInstrument: View {
     @Binding var targetAge: Int
     let currentAge: Int
 
-    private var calendar: Calendar { .autoupdatingCurrent }
-    private var progress: Double { min(1, max(0, Double(currentAge) / Double(max(1, targetAge)))) }
+    private var calendar: Calendar { CivilBirthday.calendar }
+    private var setupWeave: some View {
+        let profile = UserProfile(birthDate: birthDate, targetAge: targetAge)
+        let date = Date.now
+        let contexts = ClockScale.allCases.map {
+            TimePhaseContext.make(scale: $0, at: date, calendar: calendar, profile: profile, events: [])
+        }
+        let life = contexts[Int(ClockScale.life.position)]
+        return TimeWeaveField(contexts: contexts,
+                              snapshot: TimePhaseSnapshot(scale: .life, interval: life.clock.interval, at: date),
+                              zoom: PhaseZoom.level(for: .life), showsMinute: false)
+    }
 
     var body: some View {
         KeduGlassSurface(role: .standard, cornerRadius: AppTheme.Radius.hero) {
             VStack(spacing: 18) {
                 HStack(alignment: .firstTextBaseline) {
                     Text("人生刻度")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.subheadline.weight(.semibold))
                     Spacer()
                     Text("\(currentAge) / \(targetAge)")
-                        .font(.system(size: 12, weight: .medium, design: .monospaced))
+                        .font(.caption.monospaced().weight(.medium))
                         .foregroundStyle(theme.secondaryLabel(for: colorScheme))
                         .monospacedDigit()
                 }
@@ -135,10 +150,12 @@ private struct LifeSetupInstrument: View {
                         .overlay(Circle().stroke(theme.accent.opacity(0.25), lineWidth: 7))
                         .accessibilityHidden(true)
 
-                    valueSummary(title: "预期年龄", value: "\(targetAge) 岁", trailing: true)
+                    valueSummary(title: "预计寿命", value: "\(targetAge) 岁", trailing: true)
                 }
 
-                KeduTickRail(progress: progress, divisions: 43)
+                setupWeave
+                    .frame(height: 110)
+                    .accessibilityHidden(true)
 
                 Rectangle()
                     .fill(theme.subtleStroke(for: colorScheme))
@@ -146,7 +163,7 @@ private struct LifeSetupInstrument: View {
 
                 VStack(alignment: .leading, spacing: 10) {
                     DatePicker("你的生日", selection: $birthDate,
-                               in: (calendar.date(byAdding: .year, value: -149, to: .now) ?? .distantPast)...Date.now,
+                               in: CivilBirthday.allowedRange(calendar: calendar),
                                displayedComponents: .date)
                         .datePickerStyle(.compact)
                         .tint(theme.accent)
@@ -163,11 +180,11 @@ private struct LifeSetupInstrument: View {
 
                 AgeCalibrationControl(
                     targetAge: $targetAge,
-                    minimumAge: max(currentAge + 1, 1)
+                    minimumAge: min(150, max(currentAge + 1, 1))
                 )
                 .accessibilityIdentifier("onboarding.targetAge")
 
-                Text("预期年龄不是预测，只是一把可以随时调整的尺。")
+                Text("死之终依据你设定的预计寿命计算，并非死亡预测。")
                     .font(.caption).foregroundStyle(theme.secondaryLabel(for: colorScheme))
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -178,10 +195,10 @@ private struct LifeSetupInstrument: View {
     private func valueSummary(title: String, value: String, trailing: Bool = false) -> some View {
         VStack(alignment: trailing ? .trailing : .leading, spacing: 5) {
             Text(title)
-                .font(.system(size: 11, weight: .medium))
+                .font(.caption2.weight(.medium))
                 .foregroundStyle(theme.secondaryLabel(for: colorScheme))
             Text(value)
-                .font(.system(size: 16, weight: .medium, design: .monospaced))
+                .font(.callout.monospaced().weight(.medium))
                 .monospacedDigit()
                 .contentTransition(.numericText())
                 .lineLimit(1)
@@ -203,12 +220,12 @@ private struct AgeCalibrationControl: View {
     var body: some View {
         VStack(spacing: 10) {
             HStack {
-                Text("调整预期年龄")
-                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                Text("调整预计寿命")
+                    .font(.caption2.monospaced().weight(.medium))
                     .foregroundStyle(theme.secondaryLabel(for: colorScheme))
                 Spacer()
                 Text("\(targetAge) 岁")
-                    .font(.system(size: 18, weight: .medium, design: .monospaced))
+                    .font(.title3.monospaced().weight(.medium))
                     .monospacedDigit()
                     .contentTransition(.numericText())
             }
@@ -224,7 +241,7 @@ private struct AgeCalibrationControl: View {
             }
         }
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("预期年龄")
+        .accessibilityLabel("预计寿命")
         .accessibilityValue("\(targetAge) 岁")
         .accessibilityAdjustableAction { direction in
             adjust(direction == .increment ? 1 : -1)
@@ -253,7 +270,7 @@ private struct AgeCalibrationControl: View {
     private func ageButton(_ systemName: String, delta: Int) -> some View {
         Button { adjust(delta) } label: {
             Image(systemName: systemName)
-                .font(.system(size: 13, weight: .semibold))
+                .font(.subheadline.weight(.semibold))
                 .foregroundStyle(theme.accentInk(for: colorScheme))
                 .frame(width: 44, height: 44)
                 .background(theme.fieldFill(for: colorScheme), in: Circle())
@@ -261,7 +278,7 @@ private struct AgeCalibrationControl: View {
         }
         .buttonStyle(.plain)
         .buttonRepeatBehavior(.enabled)
-        .accessibilityLabel(delta > 0 ? "增加预期年龄" : "减少预期年龄")
+        .accessibilityLabel(delta > 0 ? "增加预计寿命" : "减少预计寿命")
     }
 
     private func adjust(_ delta: Int) {

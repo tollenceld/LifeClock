@@ -6,6 +6,33 @@ final class AppTheme {
     let accent = Color(red: 1.0, green: 0.61, blue: 0.02)
     let danger = Color(red: 0.94, green: 0.29, blue: 0.25)
 
+    func primaryLabel(for scheme: ColorScheme) -> Color {
+        scheme == .dark ? Color(red: 0.90, green: 0.89, blue: 0.86)
+                        : Color(red: 0.19, green: 0.21, blue: 0.20)
+    }
+
+    func pastInk(for scheme: ColorScheme) -> Color {
+        scheme == .dark
+            ? Color(red: 0.82, green: 0.75, blue: 0.63)
+            : Color(red: 0.40, green: 0.32, blue: 0.23)
+    }
+
+    func futureInk(for scheme: ColorScheme) -> Color {
+        scheme == .dark
+            ? Color(red: 0.66, green: 0.70, blue: 0.71)
+            : Color(red: 0.35, green: 0.39, blue: 0.40)
+    }
+
+    func boundaryInk(for scheme: ColorScheme) -> Color {
+        scheme == .dark
+            ? Color(red: 0.77, green: 0.61, blue: 0.40)
+            : Color(red: 0.51, green: 0.36, blue: 0.19)
+    }
+
+    enum Motion {
+        static let scale = Animation.easeInOut(duration: 0.55)
+    }
+
     enum Spacing {
         static let xSmall: CGFloat = 4
         static let small: CGFloat = 8
@@ -83,7 +110,7 @@ final class AppTheme {
     }
 
     func tertiaryLabel(for scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color.white.opacity(0.40) : Color.black.opacity(0.44)
+        scheme == .dark ? Color.white.opacity(0.52) : Color.black.opacity(0.56)
     }
 
     func glassStroke(for scheme: ColorScheme) -> Color {
@@ -96,6 +123,16 @@ final class AppTheme {
 }
 
 extension EventColor {
+    func ink(for scheme: ColorScheme) -> Color {
+        guard scheme == .light else { return color }
+        switch self {
+        case .amber: return Color(red: 0.60, green: 0.33, blue: 0.05)
+        case .jade: return Color(red: 0.12, green: 0.40, blue: 0.32)
+        case .cobalt: return Color(red: 0.20, green: 0.36, blue: 0.67)
+        case .coral: return Color(red: 0.67, green: 0.25, blue: 0.20)
+        case .violet: return Color(red: 0.44, green: 0.28, blue: 0.63)
+        }
+    }
     var color: Color {
         switch self {
         case .amber: Color(red: 1.0, green: 0.62, blue: 0.04)
@@ -130,8 +167,12 @@ enum AppAppearance: String, CaseIterable, Identifiable {
 // Keep the system preference authoritative; the override only lets UI tests exercise the same branch.
 extension EnvironmentValues {
     @Entry var keduReduceMotionOverride = false
+    @Entry var keduReduceTransparencyOverride = false
 
     var keduReduceMotion: Bool {
         accessibilityReduceMotion || keduReduceMotionOverride
+    }
+    var keduReduceTransparency: Bool {
+        accessibilityReduceTransparency || keduReduceTransparencyOverride
     }
 }

@@ -3,6 +3,41 @@ import SwiftData
 import Testing
 @testable import Kedu
 
+struct TimeWeaveTests {
+    @Test("分钟织口按真实时间推进，跨分钟连续换向")
+    func minuteLoupe() {
+        let start = Date(timeIntervalSince1970: 1_800_000_000)
+        #expect(TimeWeaveGeometry.minuteFraction(at: start) == 0)
+        #expect(abs(TimeWeaveGeometry.minuteFraction(at: start.addingTimeInterval(15)) - 0.25) < 0.000001)
+        #expect(TimeWeaveGeometry.minuteFraction(at: start.addingTimeInterval(59.9)) > 0.99)
+        #expect(TimeWeaveGeometry.minuteFraction(at: start.addingTimeInterval(60)) == 0)
+        #expect(TimeWeaveGeometry.minuteFraction(at: Date(timeIntervalSince1970: -15)) == 0.75)
+        #expect(abs(TimeWeaveGeometry.minutePosition(at: start.addingTimeInterval(59.9))
+                    - TimeWeaveGeometry.minutePosition(at: start.addingTimeInterval(60))) < 0.002)
+        #expect(abs(TimeWeaveGeometry.minutePosition(at: start.addingTimeInterval(119.9))
+                    - TimeWeaveGeometry.minutePosition(at: start.addingTimeInterval(120))) < 0.002)
+    }
+
+    @Test("分钟织口不会加速整体人生进度")
+    func independentScales() {
+        let birth = Date(timeIntervalSince1970: 0)
+        let interval = DateInterval(start: birth, duration: 85 * 365.25 * 86_400)
+        let date = birth.addingTimeInterval(26 * 365.25 * 86_400)
+        let before = TimePhaseSnapshot(scale: .life, interval: interval, at: date)
+        let after = TimePhaseSnapshot(scale: .life, interval: interval, at: date.addingTimeInterval(15))
+        #expect(after.progress > before.progress)
+        #expect(after.progress - before.progress < 0.000001)
+        #expect(abs(TimeWeaveGeometry.minuteFraction(at: after.date) - TimeWeaveGeometry.minuteFraction(at: before.date) - 0.25) < 0.000001)
+    }
+
+    @Test("织面缩放插值只改变空间，越界参数夹紧")
+    func spatialInterpolation() {
+        #expect(TimeWeaveGeometry.mix(0.2, 0.8, -1) == 0.2)
+        #expect(TimeWeaveGeometry.mix(0.2, 0.8, 2) == 0.8)
+        #expect(abs(TimeWeaveGeometry.mix(0.2, 0.8, 0.5) - 0.5) < 0.000001)
+    }
+}
+
 struct ClockEngineTests {
     private func calendar(_ identifier: String = "Asia/Shanghai") -> Calendar {
         var calendar = Calendar(identifier: .gregorian)
@@ -512,5 +547,344 @@ struct ClockEngineTests {
         try context.save()
         let deleted = try context.fetch(FetchDescriptor<TimeEvent>())
         #expect(deleted.isEmpty)
+    }
+    @Test("相界与通用人生快照共享闰日终点")
+    func phaseSharesLeapBirthdayAnchors() {
+        let cal = calendar()
+        let profile = UserProfile(birthDate: date(2000, 2, 29, 12), targetAge: 85)
+        let now = date(2085, 2, 28)
+        let life = LifeClockSnapshot(at: now, calendar: cal, birthDate: profile.birthDate, targetAge: 85)
+        let context = TimePhaseContext.make(scale: .life, at: now, calendar: cal, profile: profile, events: [])
+        let phase = TimePhaseSnapshot(scale: .life, interval: context.clock.interval, at: now)
+        #expect(context.clock.interval.start == life.birthInstant)
+        #expect(context.clock.interval.end == life.targetInstant)
+        #expect(context.clock.progress == life.progress)
+        #expect(context.clock.headline == "85岁")
+        #expect(phase.isAtEnd && phase.remainingSeconds == 0)
+        #expect(context.grain.first == 0 && context.grain.last == 1)
+    }
+
+    @Test("四尺度相界同一时刻互补且按真实秒数移动")
+    func phaseSamplesAreComplementary() {
+        let profile = UserProfile(birthDate: date(2000, 4, 24))
+        let now = date(2026, 10, 2, 12)
+        for scale in ClockScale.allCases {
+            let context = TimePhaseContext.make(scale: scale, at: now, calendar: calendar(), profile: profile, events: [])
+            let first = TimePhaseSnapshot(scale: scale, interval: context.clock.interval, at: now)
+            let next = TimePhaseSnapshot(scale: scale, interval: context.clock.interval, at: now.addingTimeInterval(1))
+            #expect(abs(first.elapsedSeconds + first.remainingSeconds - first.interval.duration) < 1e-6)
+            #expect(next.elapsedSeconds - first.elapsedSeconds == 1)
+            #expect(first.remainingSeconds - next.remainingSeconds == 1)
+            #expect(next.progress > first.progress)
+            #expect(PhaseFieldGeometry.boundaryY(progress: next.progress, height: 300) > PhaseFieldGeometry.boundaryY(progress: first.progress, height: 300))
+        }
+    }
+
+    @Test("相界在出生前与设定终点后有界，累计继续")
+    func phaseClampsOnlyTheLifeBoundary() {
+        let interval = DateInterval(start: date(2000, 1, 1), end: date(2085, 1, 1))
+        let before = TimePhaseSnapshot(scale: .life, interval: interval, at: interval.start.addingTimeInterval(-1))
+        let after = TimePhaseSnapshot(scale: .life, interval: interval, at: interval.end.addingTimeInterval(1))
+        #expect(before.elapsedSeconds == 0 && before.progress == 0)
+        #expect(after.elapsedSeconds == interval.duration + 1)
+        #expect(after.remainingSeconds == 0 && after.progress == 1)
+        #expect(PhaseFieldGeometry.boundaryY(progress: 0, height: 300) == 32)
+        #expect(PhaseFieldGeometry.boundaryY(progress: 1, height: 300) == 268)
+    }
+
+    @Test("时间颗粒遵守自然日、月份与实际夏令时")
+    func grainUsesActualCalendarBoundaries() {
+        let cal = calendar("America/Los_Angeles")
+        let profile = UserProfile(birthDate: date(2000, 1, 1, calendar: cal))
+        let shortDay = TimePhaseContext.make(scale: .day, at: date(2024, 3, 10, 12, calendar: cal), calendar: cal, profile: profile, events: [])
+        let longDay = TimePhaseContext.make(scale: .day, at: date(2024, 11, 3, 12, calendar: cal), calendar: cal, profile: profile, events: [])
+        #expect(shortDay.grain.count == 47)
+        #expect(longDay.grain.count == 51)
+        let month = TimePhaseContext.make(scale: .month, at: date(2024, 3, 10, calendar: cal), calendar: cal, profile: profile, events: [])
+        #expect(month.grain.count == 32)
+        #expect(abs((month.grain[10] - month.grain[9]) * month.clock.interval.duration - 23 * 3600) < 1e-6)
+        let year = TimePhaseContext.make(scale: .year, at: date(2024, 3, 10, calendar: cal), calendar: cal, profile: profile, events: [])
+        #expect(year.grain.count == 13)
+        #expect(year.grain[2] - year.grain[1] < year.grain[1] - year.grain[0])
+    }
+
+    @Test("跨日月年刷新后使用新周期，旧周期不产生负数")
+    func phaseRollsCalendarIntervals() {
+        let profile = UserProfile(birthDate: date(2000, 1, 1))
+        let boundary = date(2027, 1, 1)
+        for scale in [ClockScale.day, .month, .year] {
+            let old = TimePhaseContext.make(scale: scale, at: boundary.addingTimeInterval(-0.1), calendar: calendar(), profile: profile, events: [])
+            let new = TimePhaseContext.make(scale: scale, at: boundary, calendar: calendar(), profile: profile, events: [])
+            let ending = TimePhaseSnapshot(scale: scale, interval: old.clock.interval, at: boundary)
+            let starting = TimePhaseSnapshot(scale: scale, interval: new.clock.interval, at: boundary)
+            #expect(ending.progress == 1 && ending.remainingSeconds == 0)
+            #expect(starting.progress == 0 && starting.elapsedSeconds == 0)
+            #expect(old.clock.interval.end == new.clock.interval.start)
+        }
+    }
+
+    @Test("视觉缩放独立于保留的人生日月年导航顺序")
+    func phaseZoomPreservesMagnification() {
+        #expect(ClockScale.allCases == [.life, .day, .month, .year])
+        #expect(PhaseZoom.level(for: .day) == 0)
+        #expect(PhaseZoom.level(for: .life) == 3)
+        #expect(PhaseZoom.level(at: 1.5) == 0.5)
+        let pair = PhaseZoom.interpolation(at: 2.4)
+        #expect(pair.lower == .year && pair.upper == .life)
+        #expect(abs(pair.progress - 0.4) < 1e-9)
+        #expect(PhaseZoom.interpolation(at: -1).lower == .day)
+        #expect(PhaseZoom.interpolation(at: 9).upper == .life)
+    }
+
+    @Test("相界刻点触控分组避免重叠但保留日期")
+    func phaseMarkerClustersPreserveEvents() {
+        let profile = UserProfile(birthDate: date(2000, 1, 1))
+        let now = date(2026, 10, 2, 12)
+        let events = [TimeEvent(title: "一", recurrence: .daily, anchorDate: now),
+                      TimeEvent(title: "二", recurrence: .daily, anchorDate: now)]
+        let clock = ClockEngine.snapshot(scale: .day, at: now, calendar: calendar(), profile: profile, events: events)
+        let groups = PhaseFieldGeometry.markerGroups(clock: clock, height: 240)
+        #expect(groups.count == 1 && groups[0].markers.count == 2)
+        #expect(Set(groups[0].markers.map(\.id)) == Set(events.map(\.id)))
+        #expect(groups[0].markers.allSatisfy { $0.occurrence == now })
+    }
+
+}
+
+@MainActor
+struct ReleaseReadinessTests {
+    private var calendar: Calendar { CivilBirthday.calendar }
+    private func container() throws -> ModelContainer {
+        let schema = Schema([UserProfile.self, TimeEvent.self])
+        return try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)])
+    }
+    private func fixture() -> (UserProfile, TimeEvent) {
+        let birthday = calendar.date(from: DateComponents(year: 2000, month: 4, day: 24))!
+        let profile = UserProfile(birthDate: birthday)
+        profile.setBirthday(birthday, calendar: calendar)
+        let event = TimeEvent(title: "原有刻点", recurrence: .weekly, anchorDate: .now)
+        event.setAnchor(event.anchorDate, calendar: calendar)
+        return (profile, event)
+    }
+
+    @Test("生日在跨时区后保持同一个公历日期")
+    func civilBirthdaySurvivesTravel() {
+        var shanghai = calendar
+        shanghai.timeZone = TimeZone(identifier: "Asia/Shanghai")!
+        var losAngeles = calendar
+        losAngeles.timeZone = TimeZone(identifier: "America/Los_Angeles")!
+        let date = shanghai.date(from: DateComponents(year: 2000, month: 4, day: 24))!
+        let profile = UserProfile(birthDate: date)
+        profile.setBirthday(date, calendar: shanghai)
+        let birthday = profile.birthday(in: losAngeles)
+        #expect(CivilBirthday.key(for: birthday, calendar: losAngeles) == "2000-04-24")
+        let phase = TimePhaseContext.make(scale: .life, at: .now, calendar: losAngeles, profile: profile, events: [])
+        let basis = profile.lifeCalendar(from: losAngeles)
+        #expect(CivilBirthday.key(for: phase.clock.interval.start, calendar: basis) == "2000-04-24")
+        #expect(CivilBirthday.key(for: phase.clock.interval.end, calendar: basis) == "2085-04-24")
+        let original = TimePhaseContext.make(scale: .life, at: phase.clock.interval.start, calendar: shanghai, profile: profile, events: [])
+        #expect(original.clock.interval == phase.clock.interval)
+        let instant = Date.now
+        #expect(TimePhaseSnapshot(scale: .life, interval: original.clock.interval, at: instant)
+                == TimePhaseSnapshot(scale: .life, interval: phase.clock.interval, at: instant))
+    }
+
+    @Test("周期刻点保持本地钟点，一次性刻点保持绝对时间")
+    func recurringScheduleSurvivesTravel() {
+        var origin = calendar; origin.timeZone = TimeZone(identifier: "Asia/Shanghai")!
+        var destination = calendar; destination.timeZone = TimeZone(identifier: "America/Los_Angeles")!
+        let date = origin.date(from: DateComponents(year: 2026, month: 4, day: 24, hour: 18, minute: 30))!
+        let recurring = TimeEvent(title: "每天", recurrence: .daily, anchorDate: date)
+        recurring.setAnchor(date, calendar: origin)
+        #expect(destination.component(.hour, from: recurring.anchor(in: destination)) == 18)
+        #expect(destination.component(.minute, from: recurring.anchor(in: destination)) == 30)
+        let once = TimeEvent(title: "一次", recurrence: .once, anchorDate: date)
+        once.setAnchor(date, calendar: origin)
+        #expect(once.anchor(in: destination) == date)
+    }
+
+    @Test("备份往返保留历史规则、稳定 ID 与偏好")
+    func backupRoundTrip() throws {
+        let (profile, event) = fixture()
+        let backup = LocalBackup(profile: profile, events: [event], appearance: .dark)
+        let decoded = try LocalBackup.decode(backup.encoded())
+        #expect(decoded.profile.birthday == "2000-04-24")
+        #expect(decoded.events.first?.id == event.id)
+        #expect(decoded.events.first?.recurrence == "weekly")
+        #expect(decoded.events.first?.anchorDateComponents == event.anchorDateComponents)
+        #expect(decoded.appearance == "dark")
+    }
+
+    @Test("未知版本、无效生日、重复 ID 和错误类型均拒绝")
+    func backupRejectsInvalidPayloads() throws {
+        let (profile, event) = fixture()
+        let data = try LocalBackup(profile: profile, events: [event], appearance: .light).encoded()
+        let base = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        for mutation in 0..<5 {
+            var payload = base
+            if mutation == 0 { payload["version"] = 99 }
+            if mutation == 1 {
+                var value = payload["profile"] as! [String: Any]
+                value["birthday"] = "2000-02-31"; payload["profile"] = value
+            }
+            if mutation == 2 { payload["events"] = (payload["events"] as! [[String: Any]]) + (payload["events"] as! [[String: Any]]) }
+            if mutation == 3 { payload["format"] = "Other.App" }
+            if mutation == 4 {
+                var value = payload["profile"] as! [String: Any]
+                value["targetAge"] = 151; payload["profile"] = value
+            }
+            let invalid = try JSONSerialization.data(withJSONObject: payload)
+            #expect(throws: BackupError.self) { try LocalBackup.decode(invalid) }
+        }
+        #expect(throws: BackupError.self) { try LocalBackup.decode(Data("null".utf8)) }
+    }
+
+    @Test("超大文件在解码前拒绝")
+    func backupRejectsOversizedData() {
+        #expect(throws: BackupError.self) {
+            try LocalBackup.decode(Data(repeating: 32, count: LocalBackup.maximumBytes + 1))
+        }
+    }
+
+    @Test("恢复同一份备份不复制刻点且保留资料身份")
+    func backupRestoreIsIdempotent() throws {
+        let store = try container()
+        let context = store.mainContext
+        let (profile, event) = fixture()
+        context.insert(profile); context.insert(event); try context.save()
+        let backup = LocalBackup(profile: profile, events: [event], appearance: .system)
+        profile.targetAge = 120; event.title = "修改过"; try context.save()
+        let extra = TimeEvent(title: "额外刻点", recurrence: .once, anchorDate: .now)
+        context.insert(extra); try context.save()
+        let id = profile.id
+        try backup.restore(in: context, into: profile)
+        try backup.restore(in: context, into: profile)
+        #expect(profile.id == id)
+        #expect(profile.targetAge == 85)
+        let restored = try context.fetch(FetchDescriptor<TimeEvent>())
+        #expect(restored.count == 1)
+        #expect(restored.first?.title == "原有刻点")
+        #expect(restored.first?.id == event.id)
+        #expect(restored.first?.recurrence == .weekly)
+    }
+
+    @Test("恢复保存失败完整回滚原有资料与刻点")
+    func backupRestoreRollsBack() throws {
+        let store = try container()
+        let context = store.mainContext
+        let (profile, event) = fixture()
+        context.insert(profile); context.insert(event); try context.save()
+        let backup = LocalBackup(profile: profile, events: [event], appearance: .light)
+        profile.targetAge = 120; event.title = "要保留的名称"; try context.save()
+        context.insert(TimeEvent(title: "要保留的额外刻点", recurrence: .once, anchorDate: .now)); try context.save()
+        #expect(throws: CocoaError.self) {
+            try backup.restore(in: context, into: profile) { _ in throw CocoaError(.fileWriteOutOfSpace) }
+        }
+        #expect(profile.targetAge == 120)
+        let kept = try context.fetch(FetchDescriptor<TimeEvent>())
+        #expect(kept.count == 2)
+        #expect(kept.contains { $0.title == "要保留的名称" })
+        #expect(kept.contains { $0.title == "要保留的额外刻点" })
+        // Check the retained UI object, a fresh reader, and the next successful
+        // save. An apparent rollback must not later persist a failed restore.
+        let reader = ModelContext(store)
+        #expect(try reader.fetch(FetchDescriptor<UserProfile>()).first?.targetAge == 120)
+        try context.save()
+        #expect(try ModelContext(store).fetch(FetchDescriptor<UserProfile>()).first?.targetAge == 120)
+    }
+
+    @Test("存储打开失败可重试且不删除已有数据")
+    func storageFailureIsRecoverable() throws {
+        let store = try container()
+        let (profile, event) = fixture()
+        store.mainContext.insert(profile); store.mainContext.insert(event); try store.mainContext.save()
+        var attempts = 0
+        let storage = AppStorageController(factory: {
+            attempts += 1
+            if attempts == 1 { throw CocoaError(.fileReadNoPermission) }
+            return store
+        })
+        #expect(storage.container == nil)
+        #expect(storage.loadFailed)
+        storage.load()
+        #expect(storage.container != nil)
+        #expect(!storage.loadFailed)
+        #expect(try store.mainContext.fetchCount(FetchDescriptor<TimeEvent>()) == 1)
+        #expect(try store.mainContext.fetch(FetchDescriptor<UserProfile>()).first?.id == profile.id)
+    }
+
+    @Test("日期校验拒绝溢出日期并覆盖 150 岁边界")
+    func civilDatesValidateBoundaries() {
+        #expect(CivilBirthday.date(from: "2025-02-29", calendar: calendar) == nil)
+        #expect(CivilBirthday.date(from: "2000-02-29", calendar: calendar) != nil)
+        #expect(CivilBirthday.date(from: "999999999999-01-01", calendar: calendar) == nil)
+        #expect(CivilSchedule.date(from: "2026-04-24T25:00", calendar: calendar) == nil)
+        let now = calendar.date(from: DateComponents(year: 2026, month: 10, day: 3))!
+        #expect(CivilBirthday.key(for: CivilBirthday.allowedRange(at: now, calendar: calendar).lowerBound, calendar: calendar) == "1876-10-03")
+    }
+}
+
+private enum LegacyLocalSchema {
+    @Model final class UserProfile {
+        @Attribute(.unique) var id: UUID
+        var birthDate: Date
+        var targetAge: Int
+        var weekStartsOnMonday: Bool
+        var onboardingCompleted: Bool
+        var hapticsEnabled: Bool
+        init(birthDate: Date) {
+            id = UUID(); self.birthDate = birthDate; targetAge = 85
+            weekStartsOnMonday = true; onboardingCompleted = true; hapticsEnabled = false
+        }
+    }
+    @Model final class TimeEvent {
+        @Attribute(.unique) var id: UUID
+        var title: String
+        var symbolName: String
+        var colorRawValue: String
+        var recurrenceRawValue: String
+        var anchorDate: Date
+        var createdAt: Date
+        var updatedAt: Date
+        init() {
+            id = UUID(); title = "旧版历史刻点"; symbolName = "book.fill"; colorRawValue = "jade"
+            recurrenceRawValue = "weekly"; anchorDate = .now; createdAt = .now; updatedAt = .now
+        }
+    }
+}
+
+extension ReleaseReadinessTests {
+    @Test("旧版磁盘资料可轻量迁移，日期与历史刻点不丢失")
+    func migratesOriginalDiskSchema() throws {
+        let directory = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString, directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let url = directory.appending(path: "migration.sqlite")
+        let birth = calendar.date(from: DateComponents(year: 2000, month: 4, day: 24))!
+        var originalID: UUID!
+        do {
+            let schema = Schema([LegacyLocalSchema.UserProfile.self, LegacyLocalSchema.TimeEvent.self])
+            #expect(Set(schema.entities.map(\.name)) == Set(["UserProfile", "TimeEvent"]))
+            let old = try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, url: url)])
+            let profile = LegacyLocalSchema.UserProfile(birthDate: birth)
+            originalID = profile.id
+            old.mainContext.insert(profile)
+            old.mainContext.insert(LegacyLocalSchema.TimeEvent())
+            try old.mainContext.save()
+        }
+        let schema = Schema([UserProfile.self, TimeEvent.self])
+        let migrated = try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, url: url)])
+        let storage = AppStorageController(factory: { migrated })
+        #expect(storage.container != nil)
+        let profile = try #require(migrated.mainContext.fetch(FetchDescriptor<UserProfile>()).first)
+        #expect(profile.id == originalID)
+        #expect(profile.birthDate == birth)
+        #expect(profile.birthDateComponents == "2000-04-24")
+        #expect(profile.targetAge == 85)
+        #expect(!profile.hapticsEnabled)
+        let event = try #require(migrated.mainContext.fetch(FetchDescriptor<TimeEvent>()).first)
+        #expect(event.title == "旧版历史刻点")
+        #expect(event.recurrence == .weekly)
+        #expect(event.anchorDateComponents != nil)
     }
 }

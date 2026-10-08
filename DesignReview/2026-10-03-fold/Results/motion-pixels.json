@@ -1,0 +1,18 @@
+{
+  "crease_crop": [
+    100,
+    1070,
+    1220,
+    1520
+  ],
+  "reduced_motion": {
+    "nonzero_pixels": 44,
+    "delta_at_least_3_pixels": 0,
+    "maximum_channel_delta": 1
+  },
+  "real_speed_16_seconds": {
+    "nonzero_pixels": 160161,
+    "delta_at_least_3_pixels": 80298,
+    "maximum_channel_delta": 94
+  }
+}

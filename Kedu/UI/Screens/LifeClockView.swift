@@ -1,128 +1,109 @@
 import SwiftUI
+import UIKit
 
-/// Only this screen's clock ticks at 10 Hz. Calendar snapshots and SwiftData queries stay outside it.
-struct LifeClockView: View {
-    @Environment(AppTheme.self) private var theme
-    @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.keduReduceMotion) private var reduceMotion
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-
+/// Owns cached calendar material. The 10 Hz date lives in the small child below.
+struct TimePhaseClockView: View {
     let profile: UserProfile
+    let events: [TimeEvent]
+    let selection: ClockScale
+    let scalePosition: Double
     let isActive: Bool
-    let isVisible: Bool
-    @Binding var isReversed: Bool
-    @State private var now = Date.now
-    @State private var angle = 0.0
-    @State private var turning = false
-    @State private var faceOpacity = 1.0
-    @State private var flipTask: Task<Void, Never>?
+    let availableHeight: CGFloat
+    let onMarkerTap: (UUID) -> Void
+    @State private var contexts: [TimePhaseContext] = []
+    @State private var refreshedAt = Date.distantPast
+
+    private struct Revision: Hashable {
+        let birthDate: Date
+        let targetAge: Int
+        let timeZoneIdentifier: String?
+        let active: Bool
+        let eventIDs: [UUID]
+        let eventRevisions: [Date]
+    }
+
+    private var revision: Revision {
+        Revision(birthDate: profile.birthday(in: ClockEngine.calendar(for: profile)), targetAge: profile.targetAge,
+                 timeZoneIdentifier: profile.birthTimeZoneIdentifier, active: isActive,
+                 eventIDs: events.map(\.id), eventRevisions: events.map(\.updatedAt))
+    }
 
     var body: some View {
-        let snapshot = LifeClockSnapshot(
-            at: now, calendar: ClockEngine.calendar(for: profile),
-            birthDate: profile.birthDate, targetAge: profile.targetAge
-        )
-        let ink = LifeTimerPalette.ink(reversed: isReversed, scheme: colorScheme)
-        VStack(spacing: 0) {
-            Spacer(minLength: 36)
-            VStack(spacing: 36) {
-                ImmersiveTimeReadout(
-                    title: isReversed ? "还剩" : "已度过",
-                    value: (isReversed ? snapshot.remainingSeconds : snapshot.elapsedSeconds) / 86400,
-                    unit: "天", ink: ink, identifier: "life.days"
-                )
-                LiveTimeTrace(
-                    origin: snapshot.birthInstant, target: snapshot.targetInstant, reversed: isReversed,
-                    isActive: isActive && !(isReversed && snapshot.isAtEnd), reduceMotion: reduceMotion,
-                    sampledAt: now, ink: ink
-                ).equatable().frame(height: 38).padding(.horizontal, 24)
+        Group {
+            if contexts.count == ClockScale.allCases.count {
+                PhaseLiveReadout(contexts: contexts, selection: selection, scalePosition: scalePosition,
+                                 isActive: isActive, availableHeight: availableHeight,
+                                 refreshedAt: refreshedAt, onRefresh: refresh, onMarkerTap: onMarkerTap)
             }
-            .padding(.vertical, 30)
-            .contentShape(Rectangle())
-            .opacity(faceOpacity)
-            .rotation3DEffect(.degrees(angle), axis: (x: 0, y: 1, z: 0), perspective: 0.35)
-            .onTapGesture(perform: flip)
-            .accessibilityElement(children: .contain)
-            .accessibilityAction(named: "查看另一面") { flip() }
-            .accessibilityIdentifier("life.flip")
-            Spacer(minLength: 36)
-            DuplexFaceControl(reversed: isReversed) { target in
-                if target != isReversed { flip() }
-            }
-            .padding(.bottom, 38)
         }
-        .padding(.bottom, 4)
+        .task(id: revision) { refresh(at: .now) }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+            refresh(at: .now)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .NSSystemTimeZoneDidChange)) { _ in
+            refresh(at: .now)
+        }
+    }
+
+    private func refresh(at date: Date) {
+        let calendar = ClockEngine.calendar(for: profile)
+        contexts = ClockScale.allCases.map {
+            TimePhaseContext.make(scale: $0, at: date, calendar: calendar, profile: profile, events: events)
+        }
+        refreshedAt = date
+    }
+}
+
+private struct PhaseLiveReadout: View {
+    @Environment(\.keduReduceMotion) private var reduceMotion
+    let contexts: [TimePhaseContext]
+    let selection: ClockScale
+    let scalePosition: Double
+    let isActive: Bool
+    let availableHeight: CGFloat
+    let refreshedAt: Date
+    let onRefresh: (Date) -> Void
+    let onMarkerTap: (UUID) -> Void
+    @State private var now = Date.now
+
+    var body: some View {
+        let context = contexts[Int(selection.position)]
+        let snapshot = TimePhaseSnapshot(scale: selection, interval: context.clock.interval, at: now)
+        let zoom = reduceMotion ? PhaseZoom.level(for: selection) : PhaseZoom.level(at: scalePosition)
+        TimeWeaveInstrument(contexts: contexts, snapshot: snapshot, zoom: zoom,
+                            availableHeight: availableHeight, onMarkerTap: onMarkerTap)
+        .padding(.horizontal, 4).padding(.vertical, selection == .life ? 16 : 24)
+        .frame(minHeight: availableHeight, alignment: .center)
         .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("clock.life")
+        .accessibilityIdentifier(selection == .life ? "clock.life" : "timefield.\(selection.rawValue)")
+        #if DEBUG
         .overlay(alignment: .topLeading) {
-            if CommandLine.arguments.contains("-uiTesting") {
+            if AppLaunchOptions.isTesting {
                 Text(isActive ? "active" : "paused")
                     .font(.system(size: 1)).opacity(0.001)
-                    .frame(width: 1, height: 1)
-                    .allowsHitTesting(false)
+                    .frame(width: 1, height: 1).allowsHitTesting(false)
                     .accessibilityIdentifier("life.refresh")
                     .accessibilityValue(isActive ? "active" : "paused")
             }
         }
+        #endif
         .task(id: isActive) {
             guard isActive else { return }
-            now = .now
+            sample()
             while !Task.isCancelled {
-                do { try await Task.sleep(for: .milliseconds(100)) }
-                catch { break }
+                do { try await Task.sleep(for: .milliseconds(100)) } catch { break }
                 guard !Task.isCancelled else { break }
-                now = .now
-
+                sample()
             }
-        }
-        .onChange(of: isVisible) { _, visible in
-            if !visible { cancelFlip() }
-        }
-        .onDisappear(perform: cancelFlip)
-    }
-
-    private func flip() {
-        guard !turning else { return }
-        HapticManager.shared.selectionChanged(enabled: profile.hapticsEnabled)
-        if reduceMotion {
-            turning = true
-            flipTask = Task { @MainActor in
-                withAnimation(.easeOut(duration: 0.1)) { faceOpacity = 0 }
-                do { try await Task.sleep(for: .milliseconds(100)) } catch { return }
-                guard !Task.isCancelled else { return }
-                isReversed.toggle()
-                withAnimation(.easeIn(duration: 0.1)) { faceOpacity = 1 }
-                do { try await Task.sleep(for: .milliseconds(100)) } catch { return }
-                turning = false
-            }
-            return
-        }
-        turning = true
-        flipTask = Task { @MainActor in
-            withAnimation(.easeIn(duration: 0.25)) { angle = 90 }
-            do { try await Task.sleep(for: .milliseconds(250)) }
-            catch { return }
-            guard !Task.isCancelled else { return }
-            var transaction = Transaction()
-            transaction.disablesAnimations = true
-            withTransaction(transaction) {
-                isReversed.toggle()
-                angle = -90
-            }
-            // Commit the edge-on reverse face before beginning the second half.
-            await Task.yield()
-            withAnimation(.easeOut(duration: 0.25)) { angle = 0 }
-            do { try await Task.sleep(for: .milliseconds(250)) }
-            catch { return }
-            turning = false
         }
     }
 
-    private func cancelFlip() {
-        flipTask?.cancel()
-        flipTask = nil
-        angle = 0
-        faceOpacity = 1
-        turning = false
+    private func sample() {
+        let date = Date.now
+        now = date
+        let day = contexts[Int(ClockScale.day.position)].clock.interval
+        if date >= day.end || date < day.start || date.timeIntervalSince(refreshedAt) >= 60 || date < refreshedAt {
+            onRefresh(date)
+        }
     }
 }

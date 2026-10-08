@@ -1,0 +1,83 @@
+{
+  "generatedAt": "2026-10-02T20:55:42.573578+00:00",
+  "app": "/private/tmp/KeduMaturityFinalDelivery.xcarchive/Products/Applications/Kedu.app",
+  "status": "blocked",
+  "checks": [
+    {
+      "name": "iPhone target",
+      "status": "pass",
+      "detail": "[1]"
+    },
+    {
+      "name": "minimum deployment",
+      "status": "pass",
+      "detail": "18.0"
+    },
+    {
+      "name": "version and build",
+      "status": "pass",
+      "detail": "1.0 (1)"
+    },
+    {
+      "name": "encryption declaration",
+      "status": "pass",
+      "detail": "Non-exempt encryption = false"
+    },
+    {
+      "name": "UserDefaults reason",
+      "status": "pass",
+      "detail": "App-private preferences: CA92.1"
+    },
+    {
+      "name": "privacy collection",
+      "status": "pass",
+      "detail": "No tracking or collected data declared"
+    },
+    {
+      "name": "store icon",
+      "status": "pass",
+      "detail": "1024 square PNG, no alpha/transparency"
+    },
+    {
+      "name": "current screenshots",
+      "status": "pass",
+      "detail": "Six current 1320×2868 RGB screenshots; submission specifications still require final account review"
+    },
+    {
+      "name": "release test entry points",
+      "status": "pass",
+      "detail": "UI-test launch switches absent from compiled executable"
+    },
+    {
+      "name": "distribution signature",
+      "status": "blocked",
+      "detail": "/tmp/KeduMaturityFinalDelivery.xcarchive/Products/Applications/Kedu.app: code object is not signed at all\nIn architecture: arm64"
+    },
+    {
+      "name": "registered identifier",
+      "status": "blocked",
+      "detail": "Current: com.local.Kedu; requires issuance account registration"
+    },
+    {
+      "name": "supportURL",
+      "status": "blocked",
+      "detail": "Provide a public HTTPS URL; reachability must be checked before submission"
+    },
+    {
+      "name": "privacyPolicyURL",
+      "status": "blocked",
+      "detail": "Provide a public HTTPS URL; reachability must be checked before submission"
+    },
+    {
+      "name": "copyright",
+      "status": "blocked",
+      "detail": "Requires issuance account information"
+    },
+    {
+      "name": "sku",
+      "status": "blocked",
+      "detail": "Requires issuance account information"
+    }
+  ],
+  "limits": "A signature check is not App Store Validate App. This check does not verify URL reachability, account registration, runtime accessibility, energy usage or approval."
+}

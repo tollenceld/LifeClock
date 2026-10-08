@@ -1,24 +1,31 @@
-# 刻度 1.0 轻量上架清单
+# 刻度 1.0 提交检查
 
-## 已准备
+更新：2026-10-03。开发完成与 App Store 提交资格分开验证。
 
-- [x] 1024 × 1024 主 App 图标，无透明通道
-- [x] iOS 深色与着色图标外观
-- [x] 六张中文 iPhone 竖屏截图草稿
-- [x] 简体中文名称、副标题、描述、关键词和更新说明
-- [x] 隐私政策草稿
-- [x] App Review 操作说明草稿
-- [x] Privacy Manifest：无追踪、无收集、无声明的 Required Reason API
-- [x] 非豁免加密声明设为否
+## 本地已实现
 
-## 正式提交前再处理
+- [x] 四尺度相界、终点状态与计算依据说明
+- [x] 本地备份与确认恢复、保存失败回滚、存储启动重试
+- [x] 旧 SwiftData 磁盘数据迁移兼容与历史每周记录
+- [x] 隐私清单：无追踪、无数据收集；UserDefaults 声明 CA92.1
+- [x] 非豁免加密声明为否
+- [x] 当前功能的中文文案、隐私草稿与审核路径
+- [x] iPhone 目标、iOS 18 最低版本、Release 中停用调试测试入口
+- [x] 1024×1024 无透明商店图标与外观变体
 
-- [ ] 将 `com.local.Kedu` 替换为开发者账号中的正式 Bundle Identifier
-- [ ] 配置签名、Team 与发行证书
-- [ ] 确认 App Store Connect 中的 App 名称可用并创建 SKU
-- [ ] 提供可公开访问的支持网址与隐私政策网址
-- [ ] 填写开发者或公司版权主体
-- [ ] 根据最终功能重新填写 App Privacy 问卷与年龄分级
-- [ ] 在目标真机完成一次无调试器冷启动和数据持久化验证
-- [ ] 使用正式 Archive 执行 Validate App
-- [ ] 再按 App Store Connect 当时显示的设备规格导出最终截图
+测试和截图的实际结果以 `DesignReview/2026-10-03-release-audit/README.md` 为准，不能以清单代替验证。
+
+## 发行账号与真机仍需完成
+
+- [ ] 在发行账号注册正式 Bundle ID，替换 `com.local.Kedu`
+- [ ] 核实当前开发 Team，配置发行证书与 provisioning profile
+- [ ] 确认名称、创建 App Store Connect 记录与 SKU
+- [ ] 公开支持网址、隐私政策网址、发行主体和版权
+- [ ] 按最终功能填写 App Privacy 与年龄分级问卷
+- [ ] 真机无调试器冷启动、升级保留数据、文件提供者读写
+- [ ] 真机 VoiceOver 阅读顺序与触觉、耗电/持续运行验证
+- [ ] iOS 18 最低运行时实测
+- [ ] 使用已签名 Archive 完成 Validate App，再上传
+- [ ] 按提交时的截图要求选择本轮当前界面图；旧五尺度截图禁止作为当前版本素材
+
+Apple 依据：[审核指南](https://developer.apple.com/app-store/review/guidelines/)、[隐私 API 理由](https://developer.apple.com/documentation/bundleresources/describing-use-of-required-reason-api)、[截图规格](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications)。本地构建通过不等于已获审核批准。
